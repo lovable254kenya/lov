@@ -558,11 +558,11 @@ import { useSearchParams } from "react-router-dom";
                  <Minus className="h-4 w-4" />
                </Button>
                <span className="w-8 text-center font-bold">{numAdults}</span>
-               <Button
-                 variant="outline"
-                 size="icon"
-                 onClick={() => setNumAdults(Math.min(totalCapacity, numAdults + 1))}
-               >
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setNumAdults(Math.min(Math.min(20, totalCapacity) - numChildren, numAdults + 1))}
+                >
                  <Plus className="h-4 w-4" />
                </Button>
              </div>
@@ -587,9 +587,9 @@ import { useSearchParams } from "react-router-dom";
                <Button
                  variant="outline"
                  size="icon"
-                 onClick={() =>
-                   setNumChildren(Math.min(totalCapacity - numAdults, numChildren + 1))
-                 }
+                  onClick={() =>
+                    setNumChildren(Math.min(Math.min(20, totalCapacity) - numAdults, numChildren + 1))
+                  }
                >
                  <Plus className="h-4 w-4" />
                </Button>
