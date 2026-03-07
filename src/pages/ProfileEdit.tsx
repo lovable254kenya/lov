@@ -205,6 +205,28 @@ const ProfileEdit = () => {
         <div className="bg-white rounded-[28px] p-8 shadow-sm border border-slate-100">
           <form onSubmit={handleSubmit} className="space-y-8">
             
+            {/* Profile Picture */}
+            <div className="flex flex-col items-center gap-4">
+              <div className="relative">
+                <div className="h-24 w-24 rounded-full bg-slate-100 flex items-center justify-center overflow-hidden border-4 border-[#008080]/20">
+                  {profilePicUrl ? (
+                    <img src={profilePicUrl} alt="Profile" className="h-full w-full object-cover" referrerPolicy="no-referrer" />
+                  ) : (
+                    <User className="h-10 w-10 text-slate-400" />
+                  )}
+                </div>
+                <label className="absolute bottom-0 right-0 p-2 rounded-full bg-[#008080] text-white cursor-pointer shadow-lg hover:bg-[#006666] transition-colors">
+                  {uploadingPic ? (
+                    <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <Camera className="h-4 w-4" />
+                  )}
+                  <input type="file" accept="image/*" className="hidden" onChange={handleProfilePicUpload} disabled={uploadingPic} />
+                </label>
+              </div>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tap camera to change photo</p>
+            </div>
+
             {/* Field: Name */}
             <div className="space-y-4">
                <div className="flex items-center gap-3">
