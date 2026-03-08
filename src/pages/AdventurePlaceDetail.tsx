@@ -24,6 +24,7 @@ import { QuickNavigationBar } from "@/components/detail/QuickNavigationBar";
 import { GeneralFacilitiesDisplay } from "@/components/detail/GeneralFacilitiesDisplay";
 import { DetailMapSection } from "@/components/detail/DetailMapSection";
 import { TealLoader } from "@/components/ui/teal-loader";
+import { useCurrency } from "@/contexts/CurrencyContext";
 
 const AdventurePlaceDetail = () => {
   const { slug } = useParams();
@@ -32,6 +33,7 @@ const AdventurePlaceDetail = () => {
   const goBack = useSafeBack();
   const { toast } = useToast();
   const { position, requestLocation } = useGeolocation();
+  const { formatPrice } = useCurrency();
   
   const [place, setPlace] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
@@ -327,7 +329,7 @@ const AdventurePlaceDetail = () => {
         <div className="grid grid-cols-1 lg:grid-cols-[1.8fr,1fr] gap-4">
           <div className="space-y-4">
             <section className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
-              <h2 className="text-[11px] font-black uppercase tracking-widest mb-3 text-slate-400">About This Property</h2>
+              <h2 className="text-[11px] font-black uppercase tracking-widest mb-3 text-slate-900">About This Property</h2>
               {place.description ? (
                 <p className="text-foreground text-sm leading-relaxed whitespace-pre-line">{place.description}</p>
               ) : (
@@ -362,11 +364,11 @@ const AdventurePlaceDetail = () => {
                   {place.entry_fee && place.entry_fee > 0 ? (
                     <div className="space-y-1">
                       <div className="flex items-baseline gap-2">
-                        <span className="text-lg font-bold text-destructive">KSh {Number(place.entry_fee).toLocaleString()}</span>
+                        <span className="text-lg font-bold text-destructive">{formatPrice(Number(place.entry_fee))}</span>
                         <span className="text-[10px] font-bold text-slate-400 uppercase">/ adult</span>
                       </div>
                       {place.child_entry_fee !== undefined && (
-                        <div className="text-sm font-bold text-slate-500">Child: KSh {Number(place.child_entry_fee || 0).toLocaleString()}</div>
+                        <div className="text-sm font-bold text-slate-500">Child: {formatPrice(Number(place.child_entry_fee || 0))}</div>
                       )}
                     </div>
                   ) : (
@@ -416,10 +418,10 @@ const AdventurePlaceDetail = () => {
                 <p className="text-xs font-black uppercase text-slate-400 mb-1">Starting from/Entrtace Fee</p>
                 {place.entry_fee && place.entry_fee > 0 ? (
                   <div className="space-y-1">
-                    <h3 className="text-xl font-bold text-destructive">KSh {Number(place.entry_fee).toLocaleString()}</h3>
+                    <h3 className="text-xl font-bold text-destructive">{formatPrice(Number(place.entry_fee))}</h3>
                     <p className="text-[10px] font-bold text-slate-400 uppercase">per adult</p>
                     {place.child_entry_fee !== undefined && (
-                      <p className="text-sm font-bold text-slate-500">Child: KSh {Number(place.child_entry_fee || 0).toLocaleString()}</p>
+                      <p className="text-sm font-bold text-slate-500">Child: {formatPrice(Number(place.child_entry_fee || 0))}</p>
                     )}
                   </div>
                 ) : (

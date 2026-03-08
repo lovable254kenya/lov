@@ -26,6 +26,7 @@ import { GeneralFacilitiesDisplay } from "@/components/detail/GeneralFacilitiesD
 import { DetailMapSection } from "@/components/detail/DetailMapSection";
 import { TealLoader } from "@/components/ui/teal-loader";
 import { ExternalBookingButton } from "@/components/detail/ExternalBookingDialog";
+import { useCurrency } from "@/contexts/CurrencyContext";
 
 const HotelDetail = () => {
   const { slug } = useParams();
@@ -33,6 +34,7 @@ const HotelDetail = () => {
   const navigate = useNavigate();
   const goBack = useSafeBack();
   const { toast } = useToast();
+  const { formatPrice } = useCurrency();
   const { position, requestLocation } = useGeolocation();
   
   const [hotel, setHotel] = useState<any | null>(null);
@@ -413,7 +415,7 @@ z
           <div className="space-y-4">
             {/* Description */}
             <section className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
-              <h2 className="text-[11px] font-black uppercase tracking-widest mb-3 text-slate-400">About this property</h2>
+              <h2 className="text-[11px] font-black uppercase tracking-widest mb-3 text-slate-900">About this property</h2>
               {hotel.description ? (
                 <p className="text-foreground text-sm leading-relaxed whitespace-pre-line">{hotel.description}</p>
               ) : (
@@ -462,7 +464,7 @@ z
                   {startingPrice > 0 ? (
                     <div className="space-y-1">
                       <div className="flex items-baseline gap-2">
-                        <span className="text-lg font-bold text-destructive">KSh {startingPrice.toLocaleString()}</span>
+                        <span className="text-lg font-bold text-destructive">{formatPrice(startingPrice)}</span>
                         <span className="text-[10px] font-bold text-slate-400 uppercase">/ adult</span>
                       </div>
                     </div>
@@ -563,7 +565,7 @@ z
                   <p className="text-xs font-black uppercase text-slate-400 mb-1">Starting from/Fee</p>
                   {startingPrice > 0 ? (
                     <div className="space-y-1">
-                      <h3 className="text-xl font-bold text-destructive">KSh {startingPrice.toLocaleString()}</h3>
+                      <h3 className="text-xl font-bold text-destructive">{formatPrice(startingPrice)}</h3>
                       <p className="text-[10px] font-bold text-slate-400 uppercase">per adult</p>
                     </div>
                   ) : (

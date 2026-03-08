@@ -20,6 +20,7 @@ import { useRealtimeItemAvailability } from "@/hooks/useRealtimeBookings";
 import { Header } from "@/components/Header";
 import { DetailMapSection } from "@/components/detail/DetailMapSection";
 import { TealLoader } from "@/components/ui/teal-loader";
+import { useCurrency } from "@/contexts/CurrencyContext";
 import { ImageGalleryModal } from "@/components/detail/ImageGalleryModal";
 
 const COLORS = {
@@ -56,6 +57,7 @@ const TripDetail = () => {
   const goBack = useSafeBack();
   const { user } = useAuth();
   const { toast } = useToast();
+  const { formatPrice } = useCurrency();
   
   const [event, setEvent] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
@@ -337,7 +339,7 @@ const TripDetail = () => {
                       <CheckCircle2 className="h-4 w-4 text-[#857F3E]" />
                       <div className="flex flex-col">
                         <span className="text-[11px] font-black text-[#857F3E] uppercase tracking-wide">{act.name}</span>
-                        <span className="text-[10px] font-bold text-[#857F3E]/70">{act.price === 0 || act.is_free ? "Included" : `KSh ${Number(act.price).toLocaleString()}`}</span>
+                        <span className="text-[10px] font-bold text-[#857F3E]/70">{act.price === 0 || act.is_free ? "Included" : formatPrice(Number(act.price))}</span>
                       </div>
                     </div>
                   ))}
@@ -357,7 +359,7 @@ const TripDetail = () => {
                 <div>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Ticket Price</p>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-lg font-bold text-destructive">KSh {event.price}</span>
+                    <span className="text-lg font-bold text-destructive">{formatPrice(event.price)}</span>
                     <span className="text-slate-400 text-[10px] font-bold uppercase tracking-tighter">/ adult</span>
                   </div>
                 </div>
@@ -386,7 +388,7 @@ const TripDetail = () => {
                 </div>
                 <div className="flex justify-between text-xs font-bold uppercase tracking-tight">
                   <span className="text-slate-400">Child (Under 12)</span>
-                  <span className="text-slate-700">KSh {event.price_child || 0}</span>
+                  <span className="text-slate-700">{formatPrice(event.price_child || 0)}</span>
                 </div>
               </div>
 

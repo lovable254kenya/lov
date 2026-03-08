@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useCurrency } from "@/contexts/CurrencyContext";
 import {
   Compass,
   Instagram,
@@ -68,6 +69,7 @@ const LANGUAGES = [
 
 export const Footer = ({ className = "" }: { className?: string }) => {
   const { t, i18n } = useTranslation();
+  const { currency, setCurrency, rate, loading: rateLoading } = useCurrency();
   const [language, setLanguage] = useState(i18n.language || "en");
 
   const handleLanguageChange = (lang: string) => {
@@ -155,8 +157,39 @@ export const Footer = ({ className = "" }: { className?: string }) => {
 
         {/* Language & Mobile Section */}
         <div className="mt-10 bg-slate-800 rounded-2xl p-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             
+            {/* Currency Selector */}
+            <div className="space-y-3">
+              <h3 className="font-bold text-white text-xs uppercase tracking-[0.1em] flex items-center gap-2">
+                💱 Currency
+              </h3>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setCurrency("KES")}
+                  className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-bold transition-all ${
+                    currency === "KES"
+                      ? "bg-teal-500 text-white"
+                      : "bg-white/10 text-white/70 hover:bg-white/20"
+                  }`}
+                >
+                  KSh (KES)
+                </button>
+                <button
+                  onClick={() => setCurrency("USD")}
+                  className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-bold transition-all ${
+                    currency === "USD"
+                      ? "bg-teal-500 text-white"
+                      : "bg-white/10 text-white/70 hover:bg-white/20"
+                  }`}
+                >
+                  $ (USD)
+                </button>
+              </div>
+              <p className="text-white/40 text-[10px]">
+                {rateLoading ? "Fetching live rate..." : `Live rate: 1 USD = ${rate.toFixed(2)} KES`}
+              </p>
+            </div>
             {/* Language Selector */}
             <div className="space-y-3">
               <h3 className="font-bold text-white text-xs uppercase tracking-[0.1em] flex items-center gap-2">

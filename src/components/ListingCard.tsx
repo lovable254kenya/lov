@@ -1,5 +1,6 @@
 import React, { useState, memo, useCallback, useMemo, useEffect } from "react";
 import { MapPin, Heart, Star, Calendar, Ticket } from "lucide-react";
+import { useCurrency } from "@/contexts/CurrencyContext";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -7,6 +8,15 @@ import { cn, optimizeSupabaseImage } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { createDetailPath } from "@/lib/slugUtils";
 import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
+
+const PriceText = ({ price, isUnavailable }: { price: number; isUnavailable: boolean }) => {
+  const { formatPrice } = useCurrency();
+  return (
+    <span className={cn("text-sm font-bold text-foreground", isUnavailable && "text-muted-foreground line-through")}>
+      {formatPrice(price)}
+    </span>
+  );
+};
 
 interface ListingCardProps {
   id: string;
@@ -198,9 +208,7 @@ const ListingCardComponent = ({
                     <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
                       {['HOTEL', 'ACCOMMODATION'].includes(type) ? 'Per Night' : 'From'}
                     </span>
-                    <span className={cn("text-sm font-bold text-foreground", isUnavailable && "text-muted-foreground line-through")}>
-                        KSh {price.toLocaleString()} / ${Math.round(price / 130).toLocaleString()}
-                    </span>
+                        <PriceText price={price} isUnavailable={isUnavailable} />
                   </>
                 )}
             </div>

@@ -3,6 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { MapPin, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SimilarItemsSkeleton } from "@/components/detail/SimilarItemsSkeleton";
+import { useCurrency } from "@/contexts/CurrencyContext";
 
 const COLORS = {
   TEAL: "#008080",
@@ -17,6 +19,11 @@ interface SimilarItemsProps {
   location?: string;
   country?: string;
 }
+
+const PriceDisplay = ({ price }: { price: number }) => {
+  const { formatPrice } = useCurrency();
+  return <span className="text-md font-black" style={{ color: COLORS.CORAL }}>{formatPrice(price)}</span>;
+};
 
 export const SimilarItems = ({ currentItemId, itemType, location, country }: SimilarItemsProps) => {
   const [items, setItems] = useState<any[]>([]);
@@ -74,7 +81,8 @@ export const SimilarItems = ({ currentItemId, itemType, location, country }: Sim
     }
   };
 
-  if (loading || items.length === 0) return null;
+  if (loading) return <SimilarItemsSkeleton />;
+  if (items.length === 0) return null;
 
   const getTitleByType = () => {
     switch(itemType) {
@@ -135,9 +143,7 @@ export const SimilarItems = ({ currentItemId, itemType, location, country }: Sim
                     {item.price ? (
                       <div className="flex flex-col">
                         <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Starting from</span>
-                        <span className="text-md font-black" style={{ color: COLORS.CORAL }}>
-                          KSh {item.price}
-                        </span>
+                        <PriceDisplay price={item.price} />
                       </div>
                     ) : (
                       <span className="text-[10px] font-black text-[#008080] uppercase tracking-widest bg-[#008080]/10 px-3 py-1 rounded-full">
