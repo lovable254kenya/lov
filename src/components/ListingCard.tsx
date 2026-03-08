@@ -9,7 +9,16 @@ import { useNavigate } from "react-router-dom";
 import { createDetailPath } from "@/lib/slugUtils";
 import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
 
-interface ListingCardProps {
+const PriceText = ({ price, isUnavailable }: { price: number; isUnavailable: boolean }) => {
+  const { formatPrice } = useCurrency();
+  return (
+    <span className={cn("text-sm font-bold text-foreground", isUnavailable && "text-muted-foreground line-through")}>
+      {formatPrice(price)}
+    </span>
+  );
+};
+
+
   id: string;
   type: 'TRIP' | 'EVENT' | 'SPORT' | 'HOTEL' | 'ADVENTURE PLACE' | 'ACCOMMODATION' | 'ATTRACTION';
   name: string;
