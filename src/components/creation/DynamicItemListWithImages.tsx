@@ -315,7 +315,9 @@ export const DynamicItemListWithImages = ({
                     </label>
                   )}
                 </div>
-                <p className="text-[10px] text-muted-foreground">{imageCount}/{maxImages} photos</p>
+                <p className={`text-[10px] ${imageCount < 5 ? 'text-destructive font-bold' : 'text-muted-foreground'}`}>
+                  {imageCount}/{maxImages} photos {imageCount < 5 ? `(need ${5 - imageCount} more)` : ''}
+                </p>
               </div>
             );
           })}
