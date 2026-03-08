@@ -557,7 +557,7 @@ const Index = () => {
           <div className="container mx-auto px-4 md:px-6 py-3 md:py-5 space-y-2 md:space-y-4">
             {/* Adventures */}
             <ScrollSection
-              title="Places to Adventure" viewAllPath="/category/campsite"
+              title={t('sections.placesToAdventure')} viewAllPath="/category/campsite"
               accentClass="text-primary" scrollRef={featuredCampsitesRef}
               onScroll={handleScroll('featuredCampsites')}
               hasItems={displayCampsites.length > 0} loading={loadingScrollable}
