@@ -132,7 +132,7 @@ export const CurrencyProvider = ({ children }: { children: ReactNode }) => {
   }, [rate]);
 
   return (
-    <CurrencyContext.Provider value={{ currency, setCurrency, rate, convertPrice, formatPrice, loading }}>
+    <CurrencyContext.Provider value={{ currency, setCurrency, rate, convertPrice, formatPrice, usdHint, loading }}>
       {children}
     </CurrencyContext.Provider>
   );
