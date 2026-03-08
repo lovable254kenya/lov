@@ -601,7 +601,7 @@ const Index = () => {
                 <div className="flex items-center gap-2 mb-3 md:mb-4">
                   <MapPin className="h-4 w-4 md:h-5 md:w-5 text-blue-500" />
                   <h2 className="text-base sm:text-xl md:text-2xl font-extrabold tracking-tight text-blue-500">
-                    Nearest to You
+                    {t('sections.nearestToYou')}
                   </h2>
                 </div>
                 <div className="flex gap-3 md:gap-4 overflow-x-auto pb-2 scrollbar-hide scroll-smooth snap-x snap-mandatory">
