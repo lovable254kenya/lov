@@ -549,7 +549,7 @@ const Index = () => {
                 } ${locationLoading ? 'opacity-70 cursor-wait' : ''}`}
               >
                 {locationLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <MapPin className="h-3 w-3" />}
-                {locationLoading ? 'Finding...' : 'Near Me'}
+                {locationLoading ? t('sections.finding') : t('sections.nearMe')}
               </button>
             </div>
           </div>
