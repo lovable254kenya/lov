@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Compass,
@@ -9,7 +9,6 @@ import {
   Info,
   Facebook,
   Globe,
-  RefreshCw,
 } from "lucide-react";
 
 // Official Brand Colors
@@ -56,21 +55,6 @@ const PinterestIcon = () => (
   </svg>
 );
 
-const CURRENCIES = [
-  { code: "USD", symbol: "$", name: "US Dollar" },
-  { code: "EUR", symbol: "€", name: "Euro" },
-  { code: "GBP", symbol: "£", name: "British Pound" },
-  { code: "KES", symbol: "KSh", name: "Kenyan Shilling" },
-  { code: "TZS", symbol: "TSh", name: "Tanzanian Shilling" },
-  { code: "UGX", symbol: "USh", name: "Ugandan Shilling" },
-  { code: "ZAR", symbol: "R", name: "South African Rand" },
-  { code: "AED", symbol: "د.إ", name: "UAE Dirham" },
-  { code: "SAR", symbol: "﷼", name: "Saudi Riyal" },
-  { code: "NGN", symbol: "₦", name: "Nigerian Naira" },
-  { code: "INR", symbol: "₹", name: "Indian Rupee" },
-  { code: "EGP", symbol: "E£", name: "Egyptian Pound" },
-];
-
 const LANGUAGES = [
   { code: "en", name: "English" },
   { code: "fr", name: "Français" },
@@ -79,132 +63,6 @@ const LANGUAGES = [
   { code: "he", name: "עברית" },
 ];
 
-// Map country codes to local currencies
-const COUNTRY_CURRENCY_MAP: Record<string, string> = {
-  KE: "KES", TZ: "TZS", UG: "UGX", ZA: "ZAR", NG: "NGN",
-  AE: "AED", SA: "SAR", EG: "EGP", IN: "INR",
-  GB: "GBP", DE: "EUR", FR: "EUR", ES: "EUR", IT: "EUR",
-  US: "USD",
-};
-
-const CurrencyConverter = () => {
-  const [rates, setRates] = useState<Record<string, number>>({});
-  const [baseCurrency, setBaseCurrency] = useState("USD");
-  const [targetCurrency, setTargetCurrency] = useState("KES");
-  const [amount, setAmount] = useState("1");
-  const [loading, setLoading] = useState(true);
-  const [lastUpdated, setLastUpdated] = useState("");
-
-  // Auto-detect user's country and set local currency as target
-  useEffect(() => {
-    const detectCountry = async () => {
-      try {
-        const res = await fetch("https://ipapi.co/json/");
-        const data = await res.json();
-        const countryCode = data.country_code;
-        const localCurrency = COUNTRY_CURRENCY_MAP[countryCode];
-        if (localCurrency && localCurrency !== "USD") {
-          setTargetCurrency(localCurrency);
-        }
-      } catch {
-        // fallback to KES
-      }
-    };
-    detectCountry();
-  }, []);
-
-  const fetchRates = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch(`https://open.er-api.com/v6/latest/${baseCurrency}`);
-      const data = await res.json();
-      if (data.result === "success") {
-        setRates(data.rates);
-        setLastUpdated(new Date().toLocaleTimeString());
-      }
-    } catch {
-      console.error("Failed to fetch exchange rates");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchRates();
-  }, [baseCurrency]);
-
-  const converted = rates[targetCurrency]
-    ? (parseFloat(amount || "0") * rates[targetCurrency]).toFixed(2)
-    : "—";
-
-  const targetInfo = CURRENCIES.find((c) => c.code === targetCurrency);
-
-  const { t } = useTranslation();
-
-  return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-2">
-        <h3 className="font-bold text-white text-xs uppercase tracking-[0.1em]">{t('footer.liveCurrency')}</h3>
-        <button
-          onClick={fetchRates}
-          className="text-teal-300 hover:text-white transition-colors"
-          title="Refresh rates"
-        >
-          <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
-        </button>
-      </div>
-
-      <div className="flex gap-2">
-        <input
-          type="number"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          className="w-20 px-2 py-1.5 rounded-lg bg-white/10 border border-white/20 text-white text-sm focus:outline-none focus:border-teal-400"
-          min="0"
-        />
-        <select
-          value={baseCurrency}
-          onChange={(e) => setBaseCurrency(e.target.value)}
-          className="flex-1 px-2 py-1.5 rounded-lg bg-white/10 border border-white/20 text-white text-sm focus:outline-none focus:border-teal-400 appearance-none cursor-pointer"
-        >
-          {CURRENCIES.map((c) => (
-            <option key={c.code} value={c.code} className="bg-slate-800 text-white">
-              {c.code}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div className="text-center text-white/50 text-xs">↓</div>
-
-      <select
-        value={targetCurrency}
-        onChange={(e) => setTargetCurrency(e.target.value)}
-        className="w-full px-2 py-1.5 rounded-lg bg-white/10 border border-white/20 text-white text-sm focus:outline-none focus:border-teal-400 appearance-none cursor-pointer"
-      >
-        {CURRENCIES.filter((c) => c.code !== baseCurrency).map((c) => (
-          <option key={c.code} value={c.code} className="bg-slate-800 text-white">
-            {c.code} - {c.name}
-          </option>
-        ))}
-      </select>
-
-      <div className="bg-white/10 rounded-lg px-3 py-2 text-center">
-        <span className="text-teal-300 font-bold text-lg">
-          {targetInfo?.symbol}{converted}
-        </span>
-        <span className="text-white/50 text-xs ml-1">{targetCurrency}</span>
-      </div>
-
-      {lastUpdated && (
-        <p className="text-white/40 text-[10px] text-center">
-          {t('footer.ratesFrom')} {lastUpdated}
-        </p>
-      )}
-    </div>
-  );
-};
-
 export const Footer = ({ className = "" }: { className?: string }) => {
   const { t, i18n } = useTranslation();
   const [language, setLanguage] = useState(i18n.language || "en");
@@ -212,7 +70,6 @@ export const Footer = ({ className = "" }: { className?: string }) => {
   const handleLanguageChange = (lang: string) => {
     setLanguage(lang);
     i18n.changeLanguage(lang);
-    // Set RTL direction for Arabic and Hebrew
     document.documentElement.dir = (lang === "ar" || lang === "he") ? "rtl" : "ltr";
   };
 
@@ -293,9 +150,9 @@ export const Footer = ({ className = "" }: { className?: string }) => {
           </p>
         </div>
 
-        {/* Language, Currency & Mobile Section */}
+        {/* Language & Mobile Section */}
         <div className="mt-10 bg-slate-800 rounded-2xl p-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             
             {/* Language Selector */}
             <div className="space-y-3">
@@ -318,9 +175,6 @@ export const Footer = ({ className = "" }: { className?: string }) => {
                 {t('footer.moreLangSoon')}
               </p>
             </div>
-
-            {/* Currency Converter */}
-            <CurrencyConverter />
 
             {/* Mobile App Badges */}
             <div className="space-y-3">
