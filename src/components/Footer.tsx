@@ -140,10 +140,12 @@ const CurrencyConverter = () => {
 
   const targetInfo = CURRENCIES.find((c) => c.code === targetCurrency);
 
+  const { t } = useTranslation();
+
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2">
-        <h3 className="font-bold text-white text-xs uppercase tracking-[0.1em]">Live Currency</h3>
+        <h3 className="font-bold text-white text-xs uppercase tracking-[0.1em]">{t('footer.liveCurrency')}</h3>
         <button
           onClick={fetchRates}
           className="text-teal-300 hover:text-white transition-colors"
