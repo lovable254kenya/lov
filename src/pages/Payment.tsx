@@ -274,8 +274,8 @@ export default function Payment() {
             <div className="grid grid-cols-2 gap-2 mb-4">
               <StatCard icon={<Users className="h-4 w-4" />} label="People Referred" value={stats.totalReferred} />
               <StatCard icon={<TrendingUp className="h-4 w-4" />} label="Conversions" value={stats.totalBookings} />
-              <StatCard icon={<DollarSign className="h-4 w-4" />} label="From Bookings" value={`KES ${stats.bookingEarnings.toLocaleString()}`} />
-              <StatCard icon={<Wallet className="h-4 w-4" />} label="Total Earned" value={`KES ${stats.totalCommission.toLocaleString()}`} />
+              <StatCard icon={<DollarSign className="h-4 w-4" />} label="From Bookings" value={formatPrice(stats.bookingEarnings)} />
+              <StatCard icon={<Wallet className="h-4 w-4" />} label="Total Earned" value={formatPrice(stats.totalCommission)} />
             </div>
 
             {/* Recent Commission Activity */}
