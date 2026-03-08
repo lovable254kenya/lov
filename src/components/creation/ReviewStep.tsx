@@ -65,11 +65,12 @@ interface ReviewStepProps {
 }
 
 export const ReviewStep = ({ type, data, creatorName, creatorEmail, creatorPhone, accentColor = "#008080" }: ReviewStepProps) => {
+  const { formatPrice: currencyFormat, usdHint } = useCurrency();
   const formatPrice = (price: string | number | undefined) => {
     if (!price) return "Free";
     const num = typeof price === 'string' ? parseFloat(price) : price;
     if (num === 0) return "Free";
-    return `KES ${num.toLocaleString()}`;
+    return `${currencyFormat(num)}`;
   };
 
   const formatDays = (days?: string[]) => {
