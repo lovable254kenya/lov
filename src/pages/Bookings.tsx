@@ -20,6 +20,7 @@ import {
 const bookingsCache = { data: null as any[] | null, timestamp: 0 };
 
 const Bookings = () => {
+  const { formatPrice } = useCurrency();
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
