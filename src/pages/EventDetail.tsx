@@ -422,7 +422,7 @@ const EventDetail = () => {
           <SimilarItems currentItemId={event.id} itemType="trip" location={event.location} country={event.country} />
         </div>
       </main>
-
+      <Footer />
       <MobileBottomBar />
     </div>
   );
