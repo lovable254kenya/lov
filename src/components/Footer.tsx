@@ -69,6 +69,7 @@ const LANGUAGES = [
 
 export const Footer = ({ className = "" }: { className?: string }) => {
   const { t, i18n } = useTranslation();
+  const { currency, setCurrency, rate, loading: rateLoading } = useCurrency();
   const [language, setLanguage] = useState(i18n.language || "en");
 
   const handleLanguageChange = (lang: string) => {
