@@ -846,7 +846,7 @@ import { useSearchParams } from "react-router-dom";
              <div className="border-t pt-2 mt-2 flex justify-between font-bold text-lg">
                <span>Total</span>
                <span style={{ color: primaryColor }}>
-                 KES {calculateTotal().toLocaleString()}
+                 {formatPrice(calculateTotal())}
                </span>
              </div>
            </div>
