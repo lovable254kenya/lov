@@ -675,6 +675,19 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background pb-0 md:pb-0">
+      <SEOHead
+        title="Realtravo - Book Trips, Hotels & Adventures"
+        description="Discover and book exciting trips, events, hotels, and adventure experiences. Your gateway to unforgettable travel."
+        canonical="https://realtravo.com/"
+        ogImage="https://realtravo.com/fulllogo.png"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          "name": "Realtravo",
+          "url": "https://realtravo.com",
+          "potentialAction": { "@type": "SearchAction", "target": "https://realtravo.com/?q={search_term_string}", "query-input": "required name=search_term_string" }
+        }}
+      />
       {/* Header is now rendered in PageLayout */}
             
       {/* Hero Section with Search Bar, Background Image, and Category Icons - Hidden when search focused */}

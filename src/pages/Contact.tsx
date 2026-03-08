@@ -3,10 +3,12 @@ import { MobileBottomBar } from "@/components/MobileBottomBar";
 import { Footer } from "@/components/Footer";
 import { Card } from "@/components/ui/card";
 import { Mail, Phone, MapPin } from "lucide-react";
+import { SEOHead } from "@/components/SEOHead";
 
 const Contact = () => {
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-0">
+      <SEOHead title="Contact Realtravo | Get in Touch" description="Have questions? Contact the Realtravo team for support with bookings, hosting, and travel experiences." canonical="https://realtravo.com/contact" />
       <Header />
       
       <main className="container px-4 py-8">

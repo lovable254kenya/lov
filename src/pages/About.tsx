@@ -1,11 +1,12 @@
 import { Header } from "@/components/Header";
 import { MobileBottomBar } from "@/components/MobileBottomBar";
-
 import { Card } from "@/components/ui/card";
+import { SEOHead } from "@/components/SEOHead";
 
 const About = () => {
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-0">
+      <SEOHead title="About Realtravo | Travel Booking Platform" description="Learn about Realtravo — your gateway to discovering and booking trips, hotels, and adventure experiences worldwide." canonical="https://realtravo.com/about" />
       <Header />
     
       <main className="container px-4 py-8">
