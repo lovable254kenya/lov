@@ -11,54 +11,60 @@ interface ListingSkeletonProps {
 const ListingSkeletonComponent = ({ compact = false, className }: ListingSkeletonProps) => {
   return (
     <Card className={cn(
-      "relative flex flex-col overflow-hidden rounded-[32px] border border-border bg-card shadow-sm",
+      "group relative flex flex-col overflow-hidden rounded-[32px] border border-slate-200/80 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)]",
       compact ? "h-auto" : "h-full",
       className
     )}>
       {/* Image Container - matches ListingCard 4/3 ratio */}
-      <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
+      <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-100">
         <Skeleton className="absolute inset-0 h-full w-full rounded-none" />
 
         {/* Category Badge */}
-        <Skeleton className="absolute top-4 left-4 h-6 w-24 rounded-full" />
+        <div className="absolute left-4 top-4 z-20 flex flex-col gap-2">
+          <Skeleton className="h-6 w-24 rounded-full bg-white/60" />
+          <Skeleton className="h-5 w-14 rounded-full bg-black/10" />
+        </div>
 
         {/* Heart Button */}
-        <Skeleton className="absolute top-4 right-4 h-10 w-10 rounded-full" />
+        <Skeleton className="absolute top-4 right-4 h-10 w-10 rounded-full bg-white/20" />
       </div>
 
       {/* Content Section - matches ListingCard p-6 */}
       <div className="flex flex-1 flex-col p-6">
-        {/* Title + subtitle */}
+        {/* Title */}
         <div className="space-y-2">
-          <Skeleton className="h-6 w-11/12 rounded-md" />
-          <Skeleton className="h-6 w-8/12 rounded-md" />
+          <Skeleton className="h-5 w-11/12 rounded-md" />
+          <Skeleton className="h-5 w-7/12 rounded-md" />
         </div>
 
         {/* Location Row */}
-        <div className="mt-3 flex items-center gap-1.5">
+        <div className="mt-2 flex items-center gap-1.5">
           <Skeleton className="h-3.5 w-3.5 rounded-sm flex-shrink-0" />
           <Skeleton className="h-3 w-36 rounded-sm" />
         </div>
 
         {/* Tags */}
         <div className="mt-4 flex flex-wrap gap-2">
-          <Skeleton className="h-6 w-16 rounded-lg" />
-          <Skeleton className="h-6 w-20 rounded-lg" />
+          <Skeleton className="h-6 w-16 rounded-lg bg-slate-50 border border-slate-100" />
+          <Skeleton className="h-6 w-20 rounded-lg bg-slate-50 border border-slate-100" />
         </div>
 
         {/* Footer */}
-        <div className="mt-auto flex items-end justify-between border-t border-border pt-5">
+        <div className="mt-auto flex items-end justify-between border-t border-slate-100 pt-5">
           <div className="space-y-2">
             <Skeleton className="h-2.5 w-16 rounded-sm" />
-            <Skeleton className="h-7 w-28 rounded-sm" />
+            <Skeleton className="h-6 w-28 rounded-sm" />
           </div>
 
-          <div className="space-y-2 text-right">
+          <div className="flex flex-col items-end gap-2">
             <Skeleton className="h-6 w-20 rounded-full" />
             <Skeleton className="h-3 w-16 rounded-sm" />
           </div>
         </div>
       </div>
+
+      {/* Bottom bar accent like ListingCard hover bar */}
+      <div className="absolute bottom-0 h-1.5 w-0 bg-primary/20" />
     </Card>
   );
 };
