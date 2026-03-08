@@ -538,7 +538,7 @@ const Index = () => {
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                Top Destinations
+                {t('sections.topDestinations')}
               </button>
               <button
                 onClick={!locationLoading ? handleMyLocationTap : undefined}
