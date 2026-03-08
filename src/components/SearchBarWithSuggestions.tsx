@@ -383,13 +383,6 @@ export const SearchBarWithSuggestions = React.forwardRef<HTMLDivElement, SearchB
                               </p>
                             )}
                           </div>
-                          {result.matchedActivity && (
-                            <div className="flex items-center shrink-0">
-                              <span className="text-[9px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider bg-[#FF7F50]/10 text-[#FF7F50] border border-[#FF7F50]/20">
-                                {result.matchedActivity}
-                              </span>
-                            </div>
-                          )}
                         </button>
                       ))}
                     </>
