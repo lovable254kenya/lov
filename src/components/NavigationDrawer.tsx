@@ -43,7 +43,7 @@ export const NavigationDrawer = ({ onClose }: NavigationDrawerProps) => {
     <li>
       <button
         onClick={() => isProtected ? handleProtectedNavigation(path) : (window.location.href = path, onClose())}
-        className="w-full flex items-center justify-between px-4 py-3 rounded-xl hover:bg-slate-50 dark:hover:bg-gray-800 transition-all group"
+        className="w-full flex items-center justify-between px-4 py-3 rounded-xl hover:bg-slate-50 transition-all group"
       >
         <div className="flex items-center gap-3">
           <div className="p-2 rounded-lg bg-slate-100 dark:bg-gray-800 group-hover:bg-[#008080] transition-colors">
