@@ -63,6 +63,28 @@ const PublicManualBooking = () => {
 
   const isFacilityBased = itemType === 'hotel' || itemType === 'adventure' || itemType === 'adventure_place';
 
+  const checkItemAvailability = async (): Promise<boolean> => {
+    try {
+      let result: { approval_status?: string; is_hidden?: boolean | null } | null = null;
+      
+      if (itemType === 'trip' || itemType === 'event') {
+        const { data } = await supabase.from('trips').select('approval_status, is_hidden').eq('id', itemId!).single();
+        result = data;
+      } else if (itemType === 'hotel') {
+        const { data } = await supabase.from('hotels').select('approval_status, is_hidden').eq('id', itemId!).single();
+        result = data;
+      } else if (itemType === 'adventure' || itemType === 'adventure_place') {
+        const { data } = await supabase.from('adventure_places').select('approval_status, is_hidden').eq('id', itemId!).single();
+        result = data;
+      }
+      
+      if (!result) return false;
+      return result.approval_status === 'approved' && !result.is_hidden;
+    } catch {
+      return false;
+    }
+  };
+
   useEffect(() => {
     if (!itemId || !itemType) {
       navigate('/');
@@ -136,6 +158,13 @@ const PublicManualBooking = () => {
       }
 
       if (data) {
+        // Check if item is hidden or not approved by checking the raw query result
+        const rawCheck = await checkItemAvailability();
+        if (!rawCheck) {
+          toast({ title: "Unavailable", description: "This item is not currently available for booking.", variant: "destructive" });
+          navigate('/');
+          return;
+        }
         setItemDetails(data);
         fetchExistingEntries();
       } else {

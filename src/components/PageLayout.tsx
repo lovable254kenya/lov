@@ -37,12 +37,8 @@ export const PageLayout = ({ children }: PageLayoutProps) => {
     pathname === "/auth" || pathname === "/reset-password" || pathname === "/forgot-password" ||
     pathname === "/verify-email" || pathname === "/complete-profile" || pathname.startsWith("/booking/");
 
-  const shouldHideHeaderOnMobile =
-    pathname.startsWith("/hotel/") ||
-    pathname.startsWith("/adventure/") ||
-    pathname.startsWith("/attraction/") ||
-    pathname.startsWith("/trip/") ||
-    pathname.startsWith("/event/");
+  // On mobile, only show header on index page
+  const shouldHideHeaderOnMobile = pathname !== "/";
 
   // Hide header completely when search is focused
   const hideHeaderForSearch = isSearchFocused;

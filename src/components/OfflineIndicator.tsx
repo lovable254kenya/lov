@@ -10,9 +10,9 @@ export const OfflineIndicator = () => {
   return (
     <div
       className={cn(
-        "sticky top-0 left-0 right-0 z-[9999] bg-amber-500 text-white py-2 px-4",
-        "flex items-center justify-center gap-2 text-sm font-medium",
-        "animate-fade-in shadow-lg"
+        "w-full bg-amber-500 text-white py-1.5 px-4",
+        "flex items-center justify-center gap-2 text-xs font-medium",
+        "animate-fade-in"
       )}
     >
       <WifiOff className="h-4 w-4" />
