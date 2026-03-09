@@ -89,15 +89,14 @@ const ListingCardComponent = ({
   const formattedName = useMemo(() => name.toLowerCase().replace(/\b\w/g, c => c.toUpperCase()), [name]);
   const locationString = useMemo(() => [place, location].filter(Boolean).join(', '), [place, location]);
 
-  // Subtitle: activities or description fallback
+  // Subtitle: only activities (no description)
   const subtitle = useMemo(() => {
     if (activities && activities.length > 0) {
       const names = activities.slice(0, 3).map((a: any) => typeof a === 'string' ? a : a.name);
       return names.join(' • ');
     }
-    if (description) return description;
     return null;
-  }, [activities, description]);
+  }, [activities]);
 
   const handleCardClick = useCallback(() => {
     const typeMap: Record<string, string> = {
