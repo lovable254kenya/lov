@@ -182,7 +182,7 @@ const ListingCardComponent = ({
         {/* Top: Category + Urgency */}
         <div className="flex items-center gap-2 flex-wrap">
           <span
-            className="text-[10px] font-bold uppercase tracking-wider"
+            className={cn("text-[10px] font-bold uppercase tracking-wider", !categoryColor && "text-primary")}
             style={categoryColor ? { color: categoryColor } : undefined}
           >
             {displayType}
