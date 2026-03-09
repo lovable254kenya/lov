@@ -523,6 +523,7 @@ const Index = () => {
                       hidePrice={listing.type === "HOTEL" || listing.type === "ADVENTURE PLACE"}
                       activities={listing.activities} distance={itemDistance}
                       avgRating={ratingData?.avgRating} reviewCount={ratingData?.reviewCount}
+                      description={listing.description}
                     />
                   );
                 })}
