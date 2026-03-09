@@ -600,7 +600,7 @@ const Index = () => {
               onScroll={handleScroll('featuredEvents')}
               hasItems={displayEvents.length > 0} loading={loadingScrollable}
             >
-              {displayEvents.map((event, i) => renderCard(event, "EVENT", i, { isTrip: true }))}
+              {displayEvents.map((event, i) => renderCard(event, "EVENT", i, { isTrip: true, categoryColor: "hsl(340, 75%, 50%)" }))}
             </ScrollSection>
 
             {/* Nearest */}
