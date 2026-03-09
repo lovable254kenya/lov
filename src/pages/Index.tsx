@@ -426,9 +426,9 @@ const Index = () => {
           </picture>
           <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/80" />
 
-          {/* Content */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center pb-28 md:pb-20 px-4">
-          <div className="container mx-auto px-4 md:px-6">
+          {/* Content - centered text + search */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center pb-20 md:pb-20 px-4">
+            <div className="container mx-auto px-4 md:px-6">
               <p className="text-primary-foreground/70 text-xs md:text-sm font-semibold uppercase tracking-widest text-center mb-2">
                 {t('hero.tagline')}
               </p>
@@ -444,22 +444,25 @@ const Index = () => {
                 onBack={() => { setIsSearchFocused(false); setSearchQuery(""); fetchAllData(); }}
                 showBackButton={false}
               />
-              {/* Category pills - arranged in rows */}
-              <div className="grid grid-cols-5 gap-1.5 mt-4 w-full max-w-lg mx-auto px-2">
-                {CATEGORIES.map((cat) => (
-                  <button
-                    key={cat.title}
-                    onClick={() => navigate(cat.path)}
-                    className="flex flex-col items-center gap-1 py-2.5 px-0.5 rounded-2xl border border-white/20 transition-all hover:scale-105 active:scale-95 shadow-lg backdrop-blur-sm min-w-0"
-                    style={{ backgroundColor: cat.color }}
-                  >
-                    <div className="h-8 w-8 rounded-lg bg-white/20 flex items-center justify-center">
-                      <cat.icon className="h-4 w-4 text-white" />
-                    </div>
-                    <span className="text-[8px] font-extrabold text-white leading-tight truncate w-full text-center px-0.5">{cat.title}</span>
-                  </button>
-                ))}
-              </div>
+            </div>
+          </div>
+
+          {/* Category pills - positioned at bottom of hero, overlaying the image */}
+          <div className="absolute bottom-3 left-0 right-0 z-10 px-2 md:px-4">
+            <div className="grid grid-cols-5 gap-1.5 w-full max-w-lg mx-auto">
+              {CATEGORIES.map((cat) => (
+                <button
+                  key={cat.title}
+                  onClick={() => navigate(cat.path)}
+                  className="flex flex-col items-center gap-1 py-2.5 px-0.5 rounded-2xl border border-white/20 transition-all hover:scale-105 active:scale-95 shadow-lg backdrop-blur-sm min-w-0"
+                  style={{ backgroundColor: cat.color }}
+                >
+                  <div className="h-8 w-8 rounded-lg bg-white/20 flex items-center justify-center">
+                    <cat.icon className="h-4 w-4 text-white" />
+                  </div>
+                  <span className="text-[8px] font-extrabold text-white leading-tight truncate w-full text-center px-0.5">{cat.title}</span>
+                </button>
+              ))}
             </div>
           </div>
         </div>
