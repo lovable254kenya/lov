@@ -32,7 +32,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  // Push notifications disabled - using email and in-app notification bell only
+  // Register native push notifications when user signs in
+  useEffect(() => {
+    if (user && isNativePlatform()) {
+      registerNativePushNotifications(user.id);
+    }
+  }, [user]);
+
 
   useEffect(() => {
     // Set up auth state listener
