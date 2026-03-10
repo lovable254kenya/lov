@@ -116,20 +116,18 @@ const TripDetail = () => {
   const handleSave = () => id && handleSaveItem(id, "trip");
   const handleCopyLink = async () => {
     if (!event) return;
-    toast({ title: "Copying link..." });
-    const refLink = await generateReferralLink(event.id, "trip", event.id);
-    await navigator.clipboard.writeText(refLink);
+    const link = getShareLink(event.id, "trip", event.name, event.location);
+    await navigator.clipboard.writeText(link);
     toast({ title: "Link Copied!" });
   };
 
   const handleShare = async () => {
     if (!event) return;
-    toast({ title: "Preparing share..." });
-    const refLink = await generateReferralLink(event.id, "trip", event.id);
+    const link = getShareLink(event.id, "trip", event.name, event.location);
     if (navigator.share) {
-      try { await navigator.share({ title: event.name, url: refLink }); } catch (e) {}
+      try { await navigator.share({ title: event.name, url: link }); } catch (e) {}
     } else { 
-      await navigator.clipboard.writeText(refLink);
+      await navigator.clipboard.writeText(link);
       toast({ title: "Link Copied!" });
     }
   };
