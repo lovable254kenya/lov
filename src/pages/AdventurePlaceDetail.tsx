@@ -1,10 +1,13 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useSafeBack } from "@/hooks/useSafeBack";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Clock, ArrowLeft, Heart, Star, Circle, Calendar, Share2, Copy, Navigation, AlertCircle, Phone, Mail } from "lucide-react";
+import { 
+  MapPin, Clock, ArrowLeft, 
+  Heart, Star, Circle, Calendar, Loader2, Share2, Copy, Navigation, AlertCircle, Phone, Mail
+} from "lucide-react";
 import { SimilarItems } from "@/components/SimilarItems";
 import { useToast } from "@/hooks/use-toast";
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
@@ -25,15 +28,15 @@ import { useCurrency } from "@/contexts/CurrencyContext";
 import { Footer } from "@/components/Footer";
 
 const AdventurePlaceDetail = () => {
-  // ✅ Accept both :id and :slug param names
-  const params = useParams();
-  const id = (params.id ?? params.slug) ?? null;
+  const { slug } = useParams();
+  // ✅ slug IS the id — no extractIdFromSlug needed
+  const id = slug ?? null;
   const navigate = useNavigate();
   const goBack = useSafeBack();
   const { toast } = useToast();
   const { position, requestLocation } = useGeolocation();
   const { formatPrice } = useCurrency();
-
+  
   const [place, setPlace] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [isOpenNow, setIsOpenNow] = useState(false);
@@ -51,21 +54,30 @@ const AdventurePlaceDetail = () => {
     if (!place) return 0;
     const prices: number[] = [];
     if (place.entry_fee) prices.push(Number(place.entry_fee));
-    const extractPrices = (arr: any[]) => { if (!Array.isArray(arr)) return; arr.forEach((item) => { const p = typeof item === 'object' ? item.price : null; if (p) prices.push(Number(p)); }); };
+    const extractPrices = (arr: any[]) => {
+      if (!Array.isArray(arr)) return;
+      arr.forEach((item) => {
+        const p = typeof item === 'object' ? item.price : null;
+        if (p) prices.push(Number(p));
+      });
+    };
     extractPrices(place.facilities);
     extractPrices(place.activities);
     return prices.length > 0 ? Math.min(...prices) : 0;
   };
+
   const startingPrice = getStartingPrice();
 
   useEffect(() => {
-    if (id) Promise.all([fetchPlace(), fetchLiveRating()]);
+    if (id) {
+      Promise.all([fetchPlace(), fetchLiveRating()]);
+    }
     const urlParams = new URLSearchParams(window.location.search);
     const refSlug = urlParams.get("ref");
     if (refSlug && id) trackReferralClick(refSlug, id, "adventure_place", "booking");
     requestLocation();
     window.scrollTo(0, 0);
-  }, [id]);
+  }, [id, slug]);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 300);
@@ -79,14 +91,26 @@ const AdventurePlaceDetail = () => {
       const now = new Date();
       const currentDay = now.toLocaleString('en-us', { weekday: 'long' }).toLowerCase();
       if (place.opening_hours === "00:00" && place.closing_hours === "23:59") {
-        const days = Array.isArray(place.days_opened) ? place.days_opened.map((d: string) => d.toLowerCase()) : ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"];
-        setIsOpenNow(days.includes(currentDay)); return;
+        const days = Array.isArray(place.days_opened) 
+          ? place.days_opened.map((d: string) => d.toLowerCase()) 
+          : ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
+        setIsOpenNow(days.includes(currentDay));
+        return;
       }
       const currentTime = now.getHours() * 60 + now.getMinutes();
-      const parseTime = (t: string) => { if (!t) return 0; const [time, mod] = t.split(' '); let [h, m] = time.split(':').map(Number); if (mod === 'PM' && h < 12) h += 12; if (mod === 'AM' && h === 12) h = 0; return h * 60 + m; };
+      const parseTime = (timeStr: string) => {
+        if (!timeStr) return 0;
+        const [time, modifier] = timeStr.split(' ');
+        let [hours, minutes] = time.split(':').map(Number);
+        if (modifier === 'PM' && hours < 12) hours += 12;
+        if (modifier === 'AM' && hours === 12) hours = 0;
+        return hours * 60 + minutes;
+      };
       const openTime = parseTime(place.opening_hours || "08:00 AM");
       const closeTime = parseTime(place.closing_hours || "06:00 PM");
-      const days = Array.isArray(place.days_opened) ? place.days_opened.map((d: string) => d.toLowerCase()) : ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"];
+      const days = Array.isArray(place.days_opened) 
+        ? place.days_opened.map((d: string) => d.toLowerCase()) 
+        : ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
       setIsOpenNow(days.includes(currentDay) && currentTime >= openTime && currentTime <= closeTime);
     };
     checkOpenStatus();
@@ -97,26 +121,28 @@ const AdventurePlaceDetail = () => {
   const fetchPlace = async () => {
     if (!id) return;
     try {
-      // Step 1: match id column
-      let { data } = await supabase.from("adventure_places").select("*").eq("id", id).maybeSingle() as { data: any };
+      // Step 1: exact match on id column (works for both UUID and legacy friendly IDs)
+      let { data } = await supabase
+        .from("adventure_places")
+        .select("*")
+        .eq("id", id)
+        .maybeSingle() as { data: any };
 
-      // Step 2: fallback slug column
+      // Step 2: fallback to slug column (new listings store friendly slug separately)
       if (!data) {
-        const res = await supabase.from("adventure_places").select("*").eq("slug", id).maybeSingle() as { data: any };
-        if (res.data) data = res.data;
-      }
-
-      // Step 3: ✅ broad OR fallback — same as EventDetail pattern
-      if (!data) {
-        const res = await supabase.from("adventure_places").select("*").or(`id.eq.${id},slug.eq.${id}`).maybeSingle() as { data: any };
+        const res = await supabase
+          .from("adventure_places")
+          .select("*")
+          .eq("slug", id)
+          .maybeSingle() as { data: any };
         if (res.data) data = res.data;
       }
 
       if (!data) throw new Error("Not found");
       setPlace(data);
-    } catch (error: any) {
-      // ✅ Do NOT navigate away — just show toast
-      toast({ title: "Place not found", description: error.message, variant: "destructive" });
+    } catch (error) {
+      toast({ title: "Place not found", variant: "destructive" });
+      navigate('/');
     } finally { setLoading(false); }
   };
 
@@ -132,9 +158,12 @@ const AdventurePlaceDetail = () => {
   if (loading) return <TealLoader />;
   if (!place) return null;
 
-  const facilityImages = (Array.isArray(place.facilities) ? place.facilities : []).flatMap((f: any) => Array.isArray(f.images) ? f.images : []);
-  const activityImages = (Array.isArray(place.activities) ? place.activities : []).flatMap((a: any) => Array.isArray(a.images) ? a.images : []);
+  const facilityImages = (Array.isArray(place.facilities) ? place.facilities : [])
+    .flatMap((f: any) => (Array.isArray(f.images) ? f.images : []));
+  const activityImages = (Array.isArray(place.activities) ? place.activities : [])
+    .flatMap((a: any) => (Array.isArray(a.images) ? a.images : []));
   const allImages = [place.image_url, ...(place.gallery_images || []), ...facilityImages, ...activityImages].filter(Boolean);
+
   const is24Hours = place.opening_hours === "00:00" && place.closing_hours === "23:59";
 
   const OperatingHoursInfo = () => (
@@ -162,14 +191,26 @@ const AdventurePlaceDetail = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <DetailNavBar scrolled={scrolled} itemName={place.name} isSaved={isSaved} onSave={() => id && handleSaveItem(id, "adventure_place")} onBack={goBack} />
+      <DetailNavBar
+        scrolled={scrolled}
+        itemName={place.name}
+        isSaved={isSaved}
+        onSave={() => id && handleSaveItem(id, "adventure_place")}
+        onBack={goBack}
+      />
 
       <div className="max-w-6xl mx-auto md:px-4 md:pt-3">
-        {/* Mobile */}
         <div className="relative w-full h-[45vh] bg-slate-900 overflow-hidden md:rounded-3xl md:hidden">
           <div className="absolute top-4 left-0 right-0 px-3 z-50 flex justify-between items-center">
-            <Button onClick={goBack} className="rounded-full w-10 h-10 p-0 border-none bg-white/90 backdrop-blur-sm text-slate-900 hover:bg-white shadow-lg"><ArrowLeft className="h-5 w-5" /></Button>
-            <Button onClick={() => id && handleSaveItem(id, "adventure_place")} className={`rounded-full w-10 h-10 p-0 border-none shadow-lg backdrop-blur-sm transition-all ${isSaved ? "bg-red-500" : "bg-white/90 text-slate-900"}`}><Heart className={`h-5 w-5 ${isSaved ? "fill-white text-white" : "text-slate-900"}`} /></Button>
+            <Button onClick={goBack} className="rounded-full w-10 h-10 p-0 border-none bg-white/90 backdrop-blur-sm text-slate-900 hover:bg-white shadow-lg transition-all">
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <Button
+              onClick={() => id && handleSaveItem(id, "adventure_place")}
+              className={`rounded-full w-10 h-10 p-0 border-none shadow-lg backdrop-blur-sm transition-all ${isSaved ? "bg-red-500 hover:bg-red-600" : "bg-white/90 text-slate-900 hover:bg-white"}`}
+            >
+              <Heart className={`h-5 w-5 ${isSaved ? "fill-white text-white" : "text-slate-900"}`} />
+            </Button>
           </div>
           <Carousel plugins={[Autoplay({ delay: 3500 })]} className="w-full h-full">
             <CarouselContent className="h-full ml-0">
@@ -178,27 +219,43 @@ const AdventurePlaceDetail = () => {
                   <img src={img} alt={`${place.name} - ${idx + 1}`} className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent z-10" />
                 </CarouselItem>
-              )) : <div className="h-full w-full bg-slate-200 flex items-center justify-center text-slate-400 font-black uppercase text-xs">No Image</div>}
+              )) : (
+                <div className="h-full w-full bg-slate-200 flex items-center justify-center text-slate-400 font-black uppercase text-xs">No Image</div>
+              )}
             </CarouselContent>
           </Carousel>
           {allImages.length > 1 && <ImageGalleryModal images={allImages} name={place.name} />}
           <div className="absolute bottom-6 left-0 w-full px-4 z-20">
             <div className="bg-gradient-to-r from-black/70 via-black/50 to-transparent rounded-2xl p-4 max-w-xl">
               <div className="flex flex-wrap gap-2 mb-2">
-                <Badge className="bg-amber-400 text-black border-none px-2 py-0.5 text-[9px] font-black uppercase rounded-full flex items-center gap-1 shadow-lg"><Star className="h-3 w-3 fill-current" />{liveRating.avg > 0 ? liveRating.avg : "New"}</Badge>
-                <Badge className={`${isOpenNow ? "bg-emerald-500" : "bg-red-500"} text-white border-none px-2 py-0.5 text-[9px] font-black uppercase rounded-full flex items-center gap-1`}><Circle className={`h-2 w-2 fill-current ${isOpenNow ? "animate-pulse" : ""}`} />{isOpenNow ? "open" : "closed"}</Badge>
+                <Badge className="bg-amber-400 text-black border-none px-2 py-0.5 text-[9px] font-black uppercase rounded-full flex items-center gap-1 shadow-lg">
+                  <Star className="h-3 w-3 fill-current" />{liveRating.avg > 0 ? liveRating.avg : "New"}
+                </Badge>
+                <Badge className={`${isOpenNow ? "bg-emerald-500" : "bg-red-500"} text-white border-none px-2 py-0.5 text-[9px] font-black uppercase rounded-full flex items-center gap-1`}>
+                  <Circle className={`h-2 w-2 fill-current ${isOpenNow ? "animate-pulse" : ""}`} />
+                  {isOpenNow ? "open" : "closed"}
+                </Badge>
               </div>
               <h1 className="text-2xl font-black text-white uppercase tracking-tighter leading-none mb-2">{place.name}</h1>
-              <div className="flex items-center gap-1 text-white"><MapPin className="h-3.5 w-3.5" /><span className="text-xs font-bold uppercase truncate">{[place.place, place.location, place.country].filter(Boolean).join(', ')}</span></div>
+              <div className="flex items-center gap-1 text-white">
+                <MapPin className="h-3.5 w-3.5" />
+                <span className="text-xs font-bold uppercase truncate">{[place.place, place.location, place.country].filter(Boolean).join(', ')}</span>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Desktop */}
         <div className="hidden md:block relative">
           <div className="absolute top-6 left-6 right-6 z-50 flex justify-between items-center">
-            <Button onClick={goBack} className="rounded-full w-12 h-12 p-0 border-none bg-white/90 backdrop-blur-sm text-slate-900 hover:bg-white shadow-lg"><ArrowLeft className="h-6 w-6" /></Button>
-            <Button onClick={() => id && handleSaveItem(id, "adventure_place")} className={`rounded-full w-12 h-12 p-0 border-none shadow-lg backdrop-blur-sm transition-all ${isSaved ? "bg-red-500" : "bg-white/90 text-slate-900"}`}><Heart className={`h-6 w-6 ${isSaved ? "fill-white text-white" : "text-slate-900"}`} /></Button>
+            <Button onClick={goBack} className="rounded-full w-12 h-12 p-0 border-none bg-white/90 backdrop-blur-sm text-slate-900 hover:bg-white shadow-lg transition-all">
+              <ArrowLeft className="h-6 w-6" />
+            </Button>
+            <Button
+              onClick={() => id && handleSaveItem(id, "adventure_place")}
+              className={`rounded-full w-12 h-12 p-0 border-none shadow-lg backdrop-blur-sm transition-all ${isSaved ? "bg-red-500 hover:bg-red-600" : "bg-white/90 text-slate-900 hover:bg-white"}`}
+            >
+              <Heart className={`h-6 w-6 ${isSaved ? "fill-white text-white" : "text-slate-900"}`} />
+            </Button>
           </div>
           <div className="grid grid-cols-4 gap-2 h-[500px]">
             {allImages.length > 0 ? (
@@ -206,30 +263,54 @@ const AdventurePlaceDetail = () => {
                 <div className="col-span-2 row-span-2 rounded-3xl overflow-hidden relative group">
                   <img src={allImages[0]} alt={place.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                  <div className="absolute bottom-6 left-6 right-6 z-20 space-y-3">
-                    <div className="flex flex-wrap gap-2">
-                      <Badge className="bg-amber-400 text-black border-none px-3 py-1 text-[10px] font-black uppercase rounded-full flex items-center gap-1.5 shadow-lg"><Star className="h-3.5 w-3.5 fill-current" />{liveRating.avg > 0 ? liveRating.avg : ""}</Badge>
-                      <Badge className={`${isOpenNow ? "bg-emerald-500" : "bg-red-500"} text-white border-none px-3 py-1 text-[10px] font-black uppercase rounded-full flex items-center gap-1.5`}><Circle className={`h-2.5 w-2.5 fill-current ${isOpenNow ? "animate-pulse" : ""}`} />{isOpenNow ? "open now" : "closed"}</Badge>
+                  <div className="absolute bottom-6 left-6 right-6 z-20">
+                    <div className="space-y-3">
+                      <div className="flex flex-wrap gap-2">
+                        <Badge className="bg-amber-400 text-black border-none px-3 py-1 text-[10px] font-black uppercase rounded-full flex items-center gap-1.5 shadow-lg">
+                          <Star className="h-3.5 w-3.5 fill-current" />{liveRating.avg > 0 ? liveRating.avg : ""}
+                        </Badge>
+                        <Badge className={`${isOpenNow ? "bg-emerald-500" : "bg-red-500"} text-white border-none px-3 py-1 text-[10px] font-black uppercase rounded-full flex items-center gap-1.5`}>
+                          <Circle className={`h-2.5 w-2.5 fill-current ${isOpenNow ? "animate-pulse" : ""}`} />
+                          {isOpenNow ? "open now" : ""}
+                        </Badge>
+                      </div>
+                      <h1 className="text-3xl font-black text-white uppercase tracking-tighter leading-none">{place.name}</h1>
+                      <div className="flex items-center gap-2 text-white">
+                        <MapPin className="h-4 w-4" />
+                        <span className="text-sm font-bold uppercase">{[place.place, place.location, place.country].filter(Boolean).join(', ')}</span>
+                      </div>
                     </div>
-                    <h1 className="text-3xl font-black text-white uppercase tracking-tighter leading-none">{place.name}</h1>
-                    <div className="flex items-center gap-2 text-white"><MapPin className="h-4 w-4" /><span className="text-sm font-bold uppercase">{[place.place, place.location, place.country].filter(Boolean).join(', ')}</span></div>
                   </div>
                 </div>
-                {allImages[1] && <div className="col-span-2 rounded-3xl overflow-hidden relative group"><img src={allImages[1]} alt="" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" /></div>}
+                {allImages[1] && (
+                  <div className="col-span-2 rounded-3xl overflow-hidden relative group">
+                    <img src={allImages[1]} alt={`${place.name} - Gallery 2`} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                  </div>
+                )}
                 <div className="col-span-2 grid grid-cols-3 gap-2">
-                  {allImages.slice(2, 5).map((img, idx) => (<div key={idx} className="rounded-2xl overflow-hidden relative group"><img src={img} alt="" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" /></div>))}
+                  {allImages.slice(2, 5).map((img, idx) => (
+                    <div key={idx} className="rounded-2xl overflow-hidden relative group">
+                      <img src={img} alt={`${place.name} - Gallery ${idx + 3}`} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                    </div>
+                  ))}
                 </div>
                 <ImageGalleryModal images={allImages} name={place.name} />
               </>
             ) : (
-              <div className="col-span-4 rounded-3xl bg-slate-200 flex items-center justify-center"><p className="text-slate-400 font-black uppercase text-sm">No Images Available</p></div>
+              <div className="col-span-4 rounded-3xl bg-slate-200 flex items-center justify-center">
+                <p className="text-slate-400 font-black uppercase text-sm">No Images Available</p>
+              </div>
             )}
           </div>
         </div>
       </div>
 
       <div className="md:hidden container px-4 mt-4 max-w-6xl mx-auto">
-        <QuickNavigationBar hasFacilities={place.facilities?.length > 0} hasActivities={place.activities?.length > 0} hasContact={place.phone_numbers?.length > 0 || !!place.email} />
+        <QuickNavigationBar 
+          hasFacilities={place.facilities?.length > 0} 
+          hasActivities={place.activities?.length > 0}
+          hasContact={place.phone_numbers?.length > 0 || !!place.email}
+        />
       </div>
 
       <main className="container px-4 mt-6 relative z-30 max-w-6xl mx-auto">
@@ -237,15 +318,32 @@ const AdventurePlaceDetail = () => {
           <div className="space-y-4">
             <section className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
               <h2 className="text-[11px] font-black uppercase tracking-widest mb-3 text-slate-900">About This Property</h2>
-              {place.description
-                ? <p className="text-foreground text-sm leading-relaxed whitespace-pre-line">{place.description}</p>
-                : <div className="flex items-center gap-2 text-slate-300 italic py-4"><AlertCircle className="h-4 w-4" /> Description coming soon</div>
-              }
+              {place.description ? (
+                <p className="text-foreground text-sm leading-relaxed whitespace-pre-line">{place.description}</p>
+              ) : (
+                <div className="flex items-center gap-2 text-slate-300 italic py-4"><AlertCircle className="h-4 w-4" /> Description coming soon</div>
+              )}
             </section>
+
             <div className="md:hidden"><OperatingHoursInfo /></div>
-            <GeneralFacilitiesDisplay facilityIds={Array.isArray(place.amenities) ? place.amenities.map((a: any) => typeof a === 'string' ? a : a.name || '') : []} />
-            {place.facilities?.length > 0 && <div id="facilities-section"><FacilitiesGrid facilities={place.facilities} itemId={place.id} itemType="adventure_place" accentColor="#008080" /></div>}
-            {place.activities?.length > 0 && <div id="activities-section"><ActivitiesGrid activities={place.activities} itemId={place.id} itemType="adventure_place" accentColor="#FF7F50" /></div>}
+
+            <GeneralFacilitiesDisplay facilityIds={
+              Array.isArray(place.amenities) 
+                ? place.amenities.map((a: any) => typeof a === 'string' ? a : a.name || '') 
+                : []
+            } />
+
+            {place.facilities?.length > 0 && (
+              <div id="facilities-section">
+                <FacilitiesGrid facilities={place.facilities} itemId={place.id} itemType="adventure_place" accentColor="#008080" />
+              </div>
+            )}
+
+            {place.activities?.length > 0 && (
+              <div id="activities-section">
+                <ActivitiesGrid activities={place.activities} itemId={place.id} itemType="adventure_place" accentColor="#FF7F50" />
+              </div>
+            )}
 
             <div className="bg-white rounded-[32px] p-6 shadow-xl border border-slate-100 lg:hidden">
               <div className="flex justify-between items-start mb-6">
@@ -253,12 +351,25 @@ const AdventurePlaceDetail = () => {
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Starting from</p>
                   {place.entry_fee && place.entry_fee > 0 ? (
                     <div className="space-y-1">
-                      <div className="flex items-baseline gap-2"><span className="text-lg font-bold text-destructive">{formatPrice(Number(place.entry_fee))}</span><span className="text-[10px] font-bold text-slate-400 uppercase">/ adult</span></div>
-                      {place.child_entry_fee !== undefined && <div className="text-sm font-bold text-slate-500">Child: {formatPrice(Number(place.child_entry_fee || 0))}</div>}
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-lg font-bold text-destructive">{formatPrice(Number(place.entry_fee))}</span>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase">/ adult</span>
+                      </div>
+                      {place.child_entry_fee !== undefined && (
+                        <div className="text-sm font-bold text-slate-500">Child: {formatPrice(Number(place.child_entry_fee || 0))}</div>
+                      )}
                     </div>
-                  ) : <span className="text-3xl font-black text-emerald-600">Free Entry</span>}
+                  ) : (
+                    <span className="text-3xl font-black text-emerald-600">Free Entry</span>
+                  )}
                 </div>
-                <div className="text-right"><div className="flex items-center gap-1 text-amber-500 font-black text-lg"><Star className="h-4 w-4 fill-current" /><span>{liveRating.avg || "0"}</span></div><p className="text-[9px] font-black text-slate-400 uppercase">{liveRating.count} reviews</p></div>
+                <div className="text-right">
+                  <div className="flex items-center gap-1 text-amber-500 font-black text-lg">
+                    <Star className="h-4 w-4 fill-current" />
+                    <span>{liveRating.avg || "0"}</span>
+                  </div>
+                  <p className="text-[9px] font-black text-slate-400 uppercase">{liveRating.count} reviews</p>
+                </div>
               </div>
               <Button onClick={() => navigate(`/booking/adventure_place/${place.id}`)} className="w-full py-7 rounded-2xl text-md font-black uppercase tracking-widest bg-gradient-to-r from-[#FF7F50] to-[#FF4E50] border-none shadow-lg transition-all active:scale-95">Book Now</Button>
               <div className="grid grid-cols-3 gap-3 mt-4">
@@ -272,8 +383,18 @@ const AdventurePlaceDetail = () => {
               {(place.phone_numbers?.length > 0 || place.email) && (
                 <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 space-y-3">
                   <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Contact</h3>
-                  {place.phone_numbers?.map((phone: string, idx: number) => (<a key={idx} href={`tel:${phone}`} className="flex items-center gap-3 text-slate-600 hover:text-[#008080]"><div className="p-2 rounded-lg bg-slate-50"><Phone className="h-4 w-4 text-[#008080]" /></div><span className="text-xs font-bold uppercase tracking-tight">{phone}</span></a>))}
-                  {place.email && <a href={`mailto:${place.email}`} className="flex items-center gap-3 text-slate-600 hover:text-[#008080]"><div className="p-2 rounded-lg bg-slate-50"><Mail className="h-4 w-4 text-[#008080]" /></div><span className="text-xs font-bold tracking-tight">{place.email}</span></a>}
+                  {place.phone_numbers?.map((phone: string, idx: number) => (
+                    <a key={idx} href={`tel:${phone}`} className="flex items-center gap-3 text-slate-600 hover:text-[#008080] transition-colors">
+                      <div className="p-2 rounded-lg bg-slate-50"><Phone className="h-4 w-4 text-[#008080]" /></div>
+                      <span className="text-xs font-bold uppercase tracking-tight">{phone}</span>
+                    </a>
+                  ))}
+                  {place.email && (
+                    <a href={`mailto:${place.email}`} className="flex items-center gap-3 text-slate-600 hover:text-[#008080] transition-colors">
+                      <div className="p-2 rounded-lg bg-slate-50"><Mail className="h-4 w-4 text-[#008080]" /></div>
+                      <span className="text-xs font-bold tracking-tight">{place.email}</span>
+                    </a>
+                  )}
                 </div>
               )}
             </div>
@@ -287,31 +408,59 @@ const AdventurePlaceDetail = () => {
                   <div className="space-y-1">
                     <h3 className="text-xl font-bold text-destructive">{formatPrice(Number(place.entry_fee))}</h3>
                     <p className="text-[10px] font-bold text-slate-400 uppercase">per adult</p>
-                    {place.child_entry_fee !== undefined && <p className="text-sm font-bold text-slate-500">Child: {formatPrice(Number(place.child_entry_fee || 0))}</p>}
+                    {place.child_entry_fee !== undefined && (
+                      <p className="text-sm font-bold text-slate-500">Child: {formatPrice(Number(place.child_entry_fee || 0))}</p>
+                    )}
                   </div>
-                ) : <h3 className="text-4xl font-black text-emerald-600 mb-2">Free Entry</h3>}
-                <div className="flex items-center justify-center gap-1.5 text-amber-500 font-black mt-2"><Star className="h-4 w-4 fill-current" /><span className="text-lg">{liveRating.avg || "0"}</span></div>
+                ) : (
+                  <h3 className="text-4xl font-black text-emerald-600 mb-2">Free Entry</h3>
+                )}
+                <div className="flex items-center justify-center gap-1.5 text-amber-500 font-black mt-2">
+                  <Star className="h-4 w-4 fill-current" />
+                  <span className="text-lg">{liveRating.avg || "0"}</span>
+                </div>
               </div>
+
               <OperatingHoursInfo />
+
               <Button onClick={() => navigate(`/booking/adventure_place/${place.id}`)} className="w-full py-7 rounded-3xl text-lg font-black uppercase tracking-widest bg-gradient-to-r from-[#FF7F50] to-[#FF4E50] border-none shadow-xl transition-all active:scale-95">Reserve Now</Button>
+
               <div className="grid grid-cols-3 gap-3">
                 <UtilityButton icon={<Navigation className="h-5 w-5" />} label="Map" onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${place.name}, ${place.location}`)}`, "_blank")} />
                 <UtilityButton icon={<Copy className="h-5 w-5" />} label="Copy" onClick={async () => { const link = getShareLink(id!, "adventure_place", place.name, place.location); await navigator.clipboard.writeText(link); toast({ title: "Link Copied!" }); }} />
                 <UtilityButton icon={<Share2 className="h-5 w-5" />} label="Share" onClick={async () => { const link = getShareLink(id!, "adventure_place", place.name, place.location); if (navigator.share) { try { await navigator.share({ title: place.name, url: link }); } catch (e) {} } else { await navigator.clipboard.writeText(link); toast({ title: "Link Copied!" }); } }} />
               </div>
+
               {(place.phone_numbers?.length > 0 || place.email) && (
                 <div className="space-y-3 pt-4 border-t border-slate-100">
                   <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Contact</h3>
-                  {place.phone_numbers?.map((phone: string, idx: number) => (<a key={idx} href={`tel:${phone}`} className="flex items-center gap-3 text-slate-600 hover:text-[#008080]"><div className="p-2 rounded-lg bg-slate-50"><Phone className="h-4 w-4 text-[#008080]" /></div><span className="text-xs font-bold uppercase tracking-tight">{phone}</span></a>))}
-                  {place.email && <a href={`mailto:${place.email}`} className="flex items-center gap-3 text-slate-600 hover:text-[#008080]"><div className="p-2 rounded-lg bg-slate-50"><Mail className="h-4 w-4 text-[#008080]" /></div><span className="text-xs font-bold tracking-tight">{place.email}</span></a>}
+                  {place.phone_numbers?.map((phone: string, idx: number) => (
+                    <a key={idx} href={`tel:${phone}`} className="flex items-center gap-3 text-slate-600 hover:text-[#008080] transition-colors">
+                      <div className="p-2 rounded-lg bg-slate-50"><Phone className="h-4 w-4 text-[#008080]" /></div>
+                      <span className="text-xs font-bold uppercase tracking-tight">{phone}</span>
+                    </a>
+                  ))}
+                  {place.email && (
+                    <a href={`mailto:${place.email}`} className="flex items-center gap-3 text-slate-600 hover:text-[#008080] transition-colors">
+                      <div className="p-2 rounded-lg bg-slate-50"><Mail className="h-4 w-4 text-[#008080]" /></div>
+                      <span className="text-xs font-bold tracking-tight">{place.email}</span>
+                    </a>
+                  )}
                 </div>
               )}
             </div>
           </div>
         </div>
 
-        <div className="mt-12 bg-white rounded-3xl p-6 shadow-sm border border-slate-100"><ReviewSection itemId={place.id} itemType="adventure_place" /></div>
-        <DetailMapSection currentItem={{ id: place.id, name: place.name, latitude: place.latitude, longitude: place.longitude, location: place.location, country: place.country, image_url: place.image_url, entry_fee: place.entry_fee }} itemType="adventure" />
+        <div className="mt-12 bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
+          <ReviewSection itemId={place.id} itemType="adventure_place" />
+        </div>
+
+        <DetailMapSection
+          currentItem={{ id: place.id, name: place.name, latitude: place.latitude, longitude: place.longitude, location: place.location, country: place.country, image_url: place.image_url, entry_fee: place.entry_fee }}
+          itemType="adventure"
+        />
+
         <SimilarItems currentItemId={place.id} itemType="adventure" country={place.country} />
       </main>
       <Footer />
