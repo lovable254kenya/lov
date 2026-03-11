@@ -84,17 +84,17 @@ const BookingPage = () => {
       } else if (type === "adventure_place" || type === "adventure") {
         const result = await supabase
           .from("adventure_places")
-          .select("id,name,location,place,country,image_url,description,amenities,facilities,activities,phone_numbers,email,opening_hours,closing_hours,days_opened,approval_status,is_hidden,entry_fee,entry_fee_type,,approval_status,is_hiddenavailable_slots,created_by")
+          .select("id,name,location,place,country,image_url,description,amenities,facilities,activities,phone_numbers,email,opening_hours,closing_hours,days_opened,approval_status,is_hidden,entry_fee,entry_fee_type,available_slots,created_by")
           .eq("id", id)
-          .single();
+          .maybeSingle();
         data = result.data;
         error = result.error;
       } else if (type === "hotel") {
         const result = await supabase
           .from("hotels")
-          .select("id,name,location,place,country,image_url,description,amenities,facilities,activities,phone_numbers,email,opening_hours,,approval_status,is_hiddenclosing_hours,days_opened,available_rooms,created_by")
+          .select("id,name,location,place,country,image_url,description,amenities,facilities,activities,phone_numbers,email,opening_hours,closing_hours,days_opened,approval_status,is_hidden,available_rooms,created_by,establishment_type,general_booking_link")
           .eq("id", id)
-          .single();
+          .maybeSingle();
         data = result.data;
         error = result.error;
       }
