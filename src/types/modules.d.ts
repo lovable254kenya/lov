@@ -43,8 +43,19 @@ declare module 'qrcode.react' {
   export const QRCodeSVG: any;
 }
 declare module 'leaflet' {
-  const L: any;
+  namespace L {
+    class Map { remove(): void; setView(center: any, zoom: number): Map; }
+    class Icon { static Default: any; }
+    function map(element: any, options?: any): Map;
+    function tileLayer(url: string, options?: any): any;
+    function marker(latlng: any, options?: any): any;
+    function icon(options: any): any;
+    function divIcon(options: any): any;
+    function latLng(lat: number, lng: number): any;
+    function latLngBounds(corner1: any, corner2: any): any;
+  }
   export = L;
+  export as namespace L;
 }
 declare module '@capacitor/core' {
   export const Capacitor: { isNativePlatform(): boolean; getPlatform(): string; };
