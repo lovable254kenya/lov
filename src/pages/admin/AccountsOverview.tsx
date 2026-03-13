@@ -252,7 +252,7 @@ const AccountsOverview = () => {
           <Skeleton className="h-64 w-full rounded-3xl" />
         </main>
       </div>
-    );
+    );1
   }
 
   return (
