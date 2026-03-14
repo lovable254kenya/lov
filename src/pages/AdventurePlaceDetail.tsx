@@ -472,7 +472,7 @@ const AdventurePlaceDetail = () => {
                     )}
                   </div>
                 ) : (
-                  <h3 className="text-4xl font-black text-emerald-600 mb-2">Free Entry</h3>
+                  <h3 className="text-lg font-normal text-emerald-600 mb-2">Free Entry</h3>
                 )}
                 <div className="flex items-center justify-center gap-1.5 text-amber-500 font-black mt-2">
                   <Star className="h-4 w-4 fill-current" />
