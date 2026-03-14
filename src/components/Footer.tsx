@@ -82,9 +82,9 @@ export const Footer = ({ className = "" }: { className?: string }) => {
     <footer className={`bg-slate-50 border-t mt-16 text-slate-900 ${className}`}>
       <div className="container px-6 py-12 mx-auto">
         
-        {/* --- TOP SECTION: Global Settings & Mobile App --- */}
+        {/* --- TOP SECTION: Global Settings --- */}
         <div className="mb-12 bg-slate-800 rounded-2xl p-8 shadow-xl">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             
             {/* Currency Selector */}
             <div className="space-y-3">
@@ -138,41 +138,6 @@ export const Footer = ({ className = "" }: { className?: string }) => {
               <p className="text-white/40 text-[10px] font-medium">
                 {t('footer.moreLangSoon')}
               </p>
-            </div>
-
-            {/* Mobile App Badges */}
-            <div className="space-y-3">
-              <h3 className="font-bold text-white text-xs uppercase tracking-[0.1em]">{t('footer.mobile')}</h3>
-              <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row gap-3">
-                <a
-                  href="#"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-1 inline-flex items-center gap-3 bg-black border border-white/10 hover:border-teal-500/50 text-white rounded-xl px-4 py-2.5 transition-all hover:scale-[1.02]"
-                >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 01-.61-.92V2.734a1 1 0 01.609-.92zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-1.296l2.76 1.597-2.76 1.597-2.244-2.244 2.244-1.95zM5.864 2.658L16.8 8.991l-2.302 2.302-8.635-8.635z" />
-                  </svg>
-                  <div className="text-left">
-                    <div className="text-[9px] uppercase tracking-wider opacity-60 leading-none">Get it on</div>
-                    <div className="font-bold text-xs">Google Play</div>
-                  </div>
-                </a>
-                <a
-                  href="#"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-1 inline-flex items-center gap-3 bg-black border border-white/10 hover:border-teal-500/50 text-white rounded-xl px-4 py-2.5 transition-all hover:scale-[1.02]"
-                >
-                  <svg width="18" height="21" viewBox="0 0 17 20" fill="currentColor">
-                    <path d="M13.545 10.239c-.022-2.358 1.933-3.5 2.021-3.556-1.103-1.611-2.816-1.832-3.422-1.853-1.449-.152-2.848.868-3.587.868-.752 0-1.898-.852-3.127-.828-1.593.024-3.082.949-3.9 2.39-1.685 2.912-.43 7.198 1.187 9.557.806 1.156 1.751 2.447 2.99 2.401 1.21-.05 1.663-.773 3.122-.773 1.447 0 1.87.773 3.13.746 1.296-.02 2.113-1.162 2.891-2.327.929-1.33 1.303-2.636 1.318-2.703-.03-.01-2.508-.96-2.533-3.822h-.09zM11.16 3.18c.639-.794 1.078-1.879.955-2.98-.923.04-2.074.636-2.736 1.413-.588.691-1.114 1.815-.978 2.874 1.039.078 2.104-.525 2.759-1.307z" />
-                  </svg>
-                  <div className="text-left">
-                    <div className="text-[9px] uppercase tracking-wider opacity-60 leading-none">Download on the</div>
-                    <div className="font-bold text-xs">App Store</div>
-                  </div>
-                </a>
-              </div>
             </div>
           </div>
         </div>
