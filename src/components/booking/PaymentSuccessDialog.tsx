@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Download } from "lucide-react";
+import { CheckCircle2, ArrowLeft } from "lucide-react";
 import { BookingDownloadButton } from "./BookingDownloadButton";
 import { BookingPDFData } from "@/lib/pdfBookingExport";
 import { useNavigate } from "react-router-dom";
@@ -10,6 +10,7 @@ interface PaymentSuccessDialogProps {
   onOpenChange: (open: boolean) => void;
   bookingData: any;
   reference: string;
+  onBackToBooking?: () => void;
 }
 
 export const PaymentSuccessDialog = ({
@@ -17,6 +18,7 @@ export const PaymentSuccessDialog = ({
   onOpenChange,
   bookingData,
   reference,
+  onBackToBooking,
 }: PaymentSuccessDialogProps) => {
   const navigate = useNavigate();
 
@@ -42,10 +44,13 @@ export const PaymentSuccessDialog = ({
     navigate('/bookings');
   };
 
-  const handleClose = () => {
+  const handleBack = () => {
     onOpenChange(false);
-    // Go back to the detail page (2 steps back: booking page -> detail page)
-    navigate(-2);
+    if (onBackToBooking) {
+      onBackToBooking();
+    } else {
+      navigate(-1);
+    }
   };
 
   return (
@@ -116,7 +121,15 @@ export const PaymentSuccessDialog = ({
             >
               View My Bookings
             </Button>
-            
+
+            <Button
+              onClick={handleBack}
+              variant="ghost"
+              className="w-full h-10 rounded-2xl font-bold text-sm text-muted-foreground"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Booking
+            </Button>
           </div>
         </div>
       </DialogContent>
