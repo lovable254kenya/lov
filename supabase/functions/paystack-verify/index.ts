@@ -171,10 +171,31 @@ serve(async (req) => {
           .select()
           .single();
 
+        let resolvedBooking = booking ?? null;
+
         if (bookingError) {
           console.error("Error creating booking:", bookingError);
-        } else {
-          console.log("Booking created successfully:", booking?.id);
+        }
+
+        if (!resolvedBooking) {
+          const { data: existingBookings, error: existingBookingError } = await supabase
+            .from("bookings")
+            .select("*")
+            .eq("item_id", bookingData.item_id)
+            .eq("guest_email", bookingData.guest_email)
+            .eq("visit_date", bookingData.visit_date)
+            .order("created_at", { ascending: false })
+            .limit(1);
+
+          if (existingBookingError) {
+            console.error("Error resolving existing booking:", existingBookingError);
+          }
+
+          resolvedBooking = existingBookings?.[0] ?? null;
+        }
+
+        if (resolvedBooking) {
+          console.log("Booking resolved successfully:", resolvedBooking.id);
           console.log("Payment distribution:", {
             totalAmount,
             serviceFeeAmount,
@@ -184,7 +205,6 @@ serve(async (req) => {
 
           // Create payout record for host (to be processed 48h before booking)
           if (hostId && hostPayoutAmount > 0) {
-            // Get host bank details
             const { data: bankDetails } = await supabase
               .from('bank_details')
               .select('*')
@@ -193,15 +213,14 @@ serve(async (req) => {
               .single();
 
             if (bankDetails) {
-              // Schedule host payout
               await supabase.from('payouts').insert({
                 recipient_id: hostId,
                 recipient_type: 'host',
-                booking_id: booking?.id,
+                booking_id: resolvedBooking?.id,
                 amount: hostPayoutAmount,
                 status: 'scheduled',
                 scheduled_for: payoutScheduledAt,
-                bank_code: bankDetails.bank_name, // Will need bank code mapping
+                bank_code: bankDetails.bank_name,
                 account_number: bankDetails.account_number,
                 account_name: bankDetails.account_holder_name,
               });
@@ -211,18 +230,15 @@ serve(async (req) => {
             }
           }
 
-          // Process referral commission if applicable (done via database trigger)
-          // The award_referral_commission trigger handles this automatically
-
           // Send confirmation email to the user
           try {
             await supabase.functions.invoke("send-booking-confirmation", {
               body: {
-                bookingId: booking?.id,
+                bookingId: resolvedBooking?.id,
                 email: bookingData.guest_email,
                 guestName: bookingData.guest_name,
                 bookingType: bookingData.booking_type,
-                itemName: bookingData.emailData?.itemName || "Booking",
+                itemName: bookingData.emailData?.itemName || bookingData.booking_details?.item_name || "Booking",
                 totalAmount: bookingData.total_amount,
                 bookingDetails: bookingData.booking_details,
                 visitDate: bookingData.visit_date,
@@ -263,13 +279,13 @@ serve(async (req) => {
             if (hostEmail) {
               await supabase.functions.invoke("send-host-booking-notification", {
                 body: {
-                  bookingId: booking?.id,
+                  bookingId: resolvedBooking?.id,
                   hostEmail: hostEmail,
                   guestName: bookingData.guest_name,
                   guestEmail: bookingData.guest_email,
                   guestPhone: bookingData.guest_phone,
                   bookingType: bookingData.booking_type,
-                  itemName: bookingData.emailData?.itemName || "Booking",
+                  itemName: bookingData.emailData?.itemName || bookingData.booking_details?.item_name || "Booking",
                   totalAmount: bookingData.total_amount,
                   hostPayoutAmount: hostPayoutAmount,
                   serviceFee: serviceFeeAmount,
@@ -282,38 +298,39 @@ serve(async (req) => {
           } catch (hostEmailError) {
             console.error("Error sending host notification email:", hostEmailError);
           }
-
-          // Return full booking details for PDF download
-          return new Response(
-            JSON.stringify({
-              success: true,
-              data: {
-                status: transaction.status,
-                reference: transaction.reference,
-                amount: transaction.amount / 100,
-                paid_at: transaction.paid_at,
-                channel: transaction.channel,
-                currency: transaction.currency,
-                isSuccessful,
-                bookingId: booking?.id,
-                guestName: bookingData.guest_name,
-                guestEmail: bookingData.guest_email,
-                guestPhone: bookingData.guest_phone,
-                itemName: bookingData.emailData?.itemName || "Booking",
-                bookingType: bookingData.booking_type,
-                visitDate: bookingData.visit_date,
-                slotsBooked: bookingData.slots_booked,
-                adults: bookingData.booking_details?.adults,
-                children: bookingData.booking_details?.children,
-                facilities: bookingData.booking_details?.facilities,
-                activities: bookingData.booking_details?.activities,
-                serviceFee: serviceFeeAmount,
-                hostPayout: hostPayoutAmount,
-              },
-            }),
-            { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-          );
         }
+
+        // Return full booking details for PDF download
+        const bookingDetails = bookingData.booking_details || {};
+        return new Response(
+          JSON.stringify({
+            success: true,
+            data: {
+              status: transaction.status,
+              reference: transaction.reference,
+              amount: Number(bookingData.total_amount ?? transaction.amount / 100 ?? 0),
+              paid_at: transaction.paid_at,
+              channel: transaction.channel,
+              currency: transaction.currency,
+              isSuccessful,
+              bookingId: resolvedBooking?.id ?? null,
+              guestName: bookingData.guest_name ?? bookingDetails.guest_name ?? "Guest",
+              guestEmail: bookingData.guest_email ?? bookingDetails.guest_email ?? "",
+              guestPhone: bookingData.guest_phone ?? bookingDetails.guest_phone ?? "",
+              itemName: bookingData.emailData?.itemName || bookingDetails.item_name || "Booking",
+              bookingType: bookingData.booking_type,
+              visitDate: bookingData.visit_date,
+              slotsBooked: bookingData.slots_booked ?? ((bookingDetails.adults ?? bookingDetails.num_adults ?? 0) + (bookingDetails.children ?? bookingDetails.num_children ?? 0)),
+              adults: bookingDetails.adults ?? bookingDetails.num_adults,
+              children: bookingDetails.children ?? bookingDetails.num_children,
+              facilities: bookingDetails.facilities ?? bookingDetails.selectedFacilities ?? [],
+              activities: bookingDetails.activities ?? bookingDetails.selectedActivities ?? [],
+              serviceFee: serviceFeeAmount,
+              hostPayout: hostPayoutAmount,
+            },
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
     }
 
