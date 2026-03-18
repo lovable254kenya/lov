@@ -344,24 +344,14 @@ const Index = () => {
 
   useEffect(() => { if (position) fetchNearbyPlacesAndHotels(); }, [position, fetchNearbyPlacesAndHotels]);
 
-  // ─── Top bar appears immediately on ANY scroll, icons black before scroll ──
+  // ─── Keep search hero expanded only at the top ───────────────────────────
   useEffect(() => {
     const ctrl = () => {
-      if (window.scrollY > 0) {
-        setIsSearchVisible(false);
-        setShowSearchIcon(true);
-        setScrolledPastHero(true);
-      } else {
-        setIsSearchVisible(true);
-        setShowSearchIcon(false);
-        setScrolledPastHero(false);
-      }
+      setIsSearchVisible(window.scrollY === 0);
     };
     window.addEventListener("scroll", ctrl, { passive: true });
     return () => window.removeEventListener("scroll", ctrl);
   }, []);
-
-  const handleSearchIconClick = () => { setIsSearchVisible(true); setShowSearchIcon(false); window.scrollTo({ top: 0, behavior: 'smooth' }); };
 
   const handleMyLocationTap = useCallback(() => {
     if (permissionDenied) { setShowLocationDialog(true); return; }
