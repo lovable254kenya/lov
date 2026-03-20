@@ -12,7 +12,7 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  try {
+  try { 
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       return new Response(
