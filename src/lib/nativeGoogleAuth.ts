@@ -1,20 +1,8 @@
 import { Capacitor } from '@capacitor/core';
+import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import { supabase } from '@/integrations/supabase/client';
 
 export const isNative = () => Capacitor.isNativePlatform();
-
-// Lazy reference to the native GoogleAuth plugin (only works on native)
-let _googleAuth: any = null;
-function getGoogleAuth() {
-  if (!_googleAuth) {
-    // Access via the global Capacitor plugins registry
-    _googleAuth = (window as any).Capacitor?.Plugins?.GoogleAuth;
-  }
-  if (!_googleAuth) {
-    throw new Error('GoogleAuth plugin not available. Ensure @codetrix-studio/capacitor-google-auth is installed and synced.');
-  }
-  return _googleAuth;
-}
 
 export async function signInWithGoogleNative() {
   if (!isNative()) {
@@ -30,17 +18,15 @@ export async function signInWithGoogleNative() {
     return null;
   }
 
-  const GoogleAuth = getGoogleAuth();
-
   try {
     await GoogleAuth.initialize({
-      clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID || '',
+      clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID || undefined,
       scopes: ['profile', 'email'],
       grantOfflineAccess: true,
     });
 
     const googleUser = await GoogleAuth.signIn();
-    const idToken = googleUser.authentication?.idToken;
+    const idToken = googleUser.authentication?.idToken || googleUser.serverAuthCode || googleUser.idToken;
     if (!idToken) {
       throw new Error('No ID token received from Google Sign-In');
     }

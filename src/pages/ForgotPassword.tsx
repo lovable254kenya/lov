@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 import { MobileBottomBar } from "@/components/MobileBottomBar"; // Swapped Footer for BottomBar for consistency
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, Mail, Lock, Clock, AlertTriangle, Loader2, ArrowLeft, CheckCircle2 } from "lucide-react";
 import { PasswordStrength } from "@/components/ui/password-strength";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import { useAuth } from "@/contexts/AuthContext";
 
 const COLORS = {
   TEAL: "#008080",
@@ -25,8 +27,10 @@ const ForgotPassword = () => {
   const [step, setStep] = useState<'email' | 'verify' | 'reset'>('email');
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -36,6 +40,7 @@ const ForgotPassword = () => {
   const [canResend, setCanResend] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const validatePassword = (pwd: string): { valid: boolean; message?: string } => {
     if (pwd.length < 8) return { valid: false, message: "Password must be at least 8 characters long" };
@@ -108,6 +113,47 @@ const ForgotPassword = () => {
     }
   };
 
+  const handleAuthenticatedPasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+
+    if (!user?.email) {
+      setError("Please log in again and try once more");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setError("Passwords don't match");
+      return;
+    }
+
+    const validation = validatePassword(newPassword);
+    if (!validation.valid) {
+      setError(validation.message || "Invalid password");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: user.email,
+        password: currentPassword,
+      });
+      if (signInError) throw new Error("Current password is incorrect");
+
+      const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
+      if (updateError) throw updateError;
+
+      await supabase.auth.signOut({ scope: 'global' });
+      toast({ title: "Password updated", description: "Please log in with your new password." });
+      navigate("/auth");
+    } catch (error: any) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Shared Header for the Auth Steps
   const AuthHeader = ({ icon: Icon, title, subtitle }: { icon: any, title: string, subtitle: string }) => (
     <div className="flex flex-col items-center mb-8">
@@ -135,105 +181,165 @@ const ForgotPassword = () => {
         </Button>
 
         <div className="bg-white rounded-[32px] p-8 md:p-10 shadow-2xl border border-slate-100 transition-all duration-500">
-          
-          {step === 'email' && (
-            <form onSubmit={handleSendCode} className="space-y-6">
-              <AuthHeader icon={Mail} title="Recovery" subtitle="Enter your email to receive a secure access code" />
+          {user ? (
+            <form onSubmit={handleAuthenticatedPasswordChange} className="space-y-5">
+              <AuthHeader icon={Lock} title="Change Password" subtitle="Confirm your current password, then set a new one" />
+
               <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Email Address</Label>
-                <Input 
-                  type="email" 
-                  className="rounded-2xl border-slate-100 bg-slate-50 h-14 focus:ring-[#008080]" 
-                  placeholder="name@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-              <PrimaryButton loading={loading} text="Send Secure Code" disabled={!email} />
-            </form>
-          )}
-
-          {step === 'verify' && (
-            <div className="space-y-8">
-              <AuthHeader icon={CheckCircle2} title="Verify" subtitle={`We've sent a code to ${email}`} />
-              
-              <div className="flex justify-center">
-                <InputOTP maxLength={6} value={otp} onChange={(v) => { setOtp(v); if (v.length === 6) handleVerifyOtp(v); }}>
-                  <InputOTPGroup className="gap-2">
-                    {[0,1,2,3,4,5].map((i) => (
-                      <InputOTPSlot 
-                        key={i} 
-                        index={i} 
-                        className="w-12 h-14 rounded-xl border-slate-200 text-lg font-black text-[#008080]" 
-                      />
-                    ))}
-                  </InputOTPGroup>
-                </InputOTP>
-              </div>
-
-              {verifying && <div className="flex justify-center items-center gap-2 text-[10px] font-black text-[#008080] uppercase tracking-widest"><Loader2 className="h-4 w-4 animate-spin" /> Verifying</div>}
-
-              <div className="text-center space-y-4">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">
-                  Didn't receive code? {countdown > 0 ? `Wait ${countdown}s` : ""}
-                </p>
-                <Button 
-                  variant="ghost" 
-                  disabled={!canResend} 
-                  onClick={handleSendCode}
-                  className="text-[#008080] font-black uppercase text-[10px] tracking-widest h-auto py-0 hover:bg-transparent"
-                >
-                  Resend Code
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {step === 'reset' && (
-            <form onSubmit={handleResetPassword} className="space-y-5">
-              <AuthHeader icon={Lock} title="New Password" subtitle="Choose a strong, unique password for your account" />
-              
-              <div className="space-y-4">
-                <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">New Password</Label>
-                  <div className="relative">
-                    <Input 
-                      type={showPassword ? "text" : "password"} 
-                      className="rounded-2xl border-slate-100 bg-slate-50 h-14 pr-12"
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      required
-                    />
-                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300">
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                  <PasswordStrength password={newPassword} />
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Confirm Password</Label>
-                  <div className="relative">
-                    <Input 
-                      type={showConfirmPassword ? "text" : "password"} 
-                      className="rounded-2xl border-slate-100 bg-slate-50 h-14"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      required
-                    />
-                  </div>
+                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Current Password</Label>
+                <div className="relative">
+                  <Input
+                    type={showCurrentPassword ? "text" : "password"}
+                    className="rounded-2xl border-slate-100 bg-slate-50 h-14 pr-12"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    required
+                  />
+                  <button type="button" onClick={() => setShowCurrentPassword(!showCurrentPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300">
+                    {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
                 </div>
               </div>
 
-              {error && <div className="p-3 rounded-xl bg-red-50 border border-red-100 flex items-center gap-2 text-red-600 text-[10px] font-bold uppercase tracking-tight"><AlertTriangle className="h-4 w-4"/> {error}</div>}
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">New Password</Label>
+                <div className="relative">
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    className="rounded-2xl border-slate-100 bg-slate-50 h-14 pr-12"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    required
+                  />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300">
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+                <PasswordStrength password={newPassword} />
+              </div>
 
-              <PrimaryButton loading={loading} text="Update Password" disabled={loading || newPassword !== confirmPassword || !validatePassword(newPassword).valid} />
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Confirm Password</Label>
+                <div className="relative">
+                  <Input
+                    type={showConfirmPassword ? "text" : "password"}
+                    className="rounded-2xl border-slate-100 bg-slate-50 h-14 pr-12"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                  />
+                  <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300">
+                    {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+
+              {error && <div className="p-3 rounded-xl bg-red-50 border border-red-100 flex items-center gap-2 text-red-600 text-[10px] font-bold uppercase tracking-tight"><AlertTriangle className="h-4 w-4" /> {error}</div>}
+              <PrimaryButton loading={loading} text="Change Password" disabled={!currentPassword || !newPassword || newPassword !== confirmPassword || !validatePassword(newPassword).valid} />
             </form>
+          ) : (
+            <>
+              {step === 'email' && (
+                <form onSubmit={handleSendCode} className="space-y-6">
+                  <AuthHeader icon={Mail} title="Recovery" subtitle="Enter your email to receive a secure access code" />
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Email Address</Label>
+                    <Input 
+                      type="email" 
+                      className="rounded-2xl border-slate-100 bg-slate-50 h-14 focus:ring-[#008080]" 
+                      placeholder="name@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <PrimaryButton loading={loading} text="Send Secure Code" disabled={!email} />
+                </form>
+              )}
+
+              {step === 'verify' && (
+                <div className="space-y-8">
+                  <AuthHeader icon={CheckCircle2} title="Verify" subtitle={`We've sent a code to ${email}`} />
+                  
+                  <div className="flex justify-center">
+                    <InputOTP maxLength={6} value={otp} onChange={(v) => { setOtp(v); if (v.length === 6) handleVerifyOtp(v); }}>
+                      <InputOTPGroup className="gap-2">
+                        {[0,1,2,3,4,5].map((i) => (
+                          <InputOTPSlot 
+                            key={i} 
+                            index={i} 
+                            className="w-12 h-14 rounded-xl border-slate-200 text-lg font-black text-[#008080]" 
+                          />
+                        ))}
+                      </InputOTPGroup>
+                    </InputOTP>
+                  </div>
+
+                  {verifying && <div className="flex justify-center items-center gap-2 text-[10px] font-black text-[#008080] uppercase tracking-widest"><Loader2 className="h-4 w-4 animate-spin" /> Verifying</div>}
+
+                  <div className="text-center space-y-4">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">
+                      Didn't receive code? {countdown > 0 ? `Wait ${countdown}s` : ""}
+                    </p>
+                    <Button 
+                      variant="ghost" 
+                      disabled={!canResend} 
+                      onClick={handleSendCode}
+                      className="text-[#008080] font-black uppercase text-[10px] tracking-widest h-auto py-0 hover:bg-transparent"
+                    >
+                      Resend Code
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {step === 'reset' && (
+                <form onSubmit={handleResetPassword} className="space-y-5">
+                  <AuthHeader icon={Lock} title="New Password" subtitle="Choose a strong, unique password for your account" />
+                  
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">New Password</Label>
+                      <div className="relative">
+                        <Input 
+                          type={showPassword ? "text" : "password"} 
+                          className="rounded-2xl border-slate-100 bg-slate-50 h-14 pr-12"
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          required
+                        />
+                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300">
+                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
+                      <PasswordStrength password={newPassword} />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Confirm Password</Label>
+                      <div className="relative">
+                        <Input 
+                          type={showConfirmPassword ? "text" : "password"} 
+                          className="rounded-2xl border-slate-100 bg-slate-50 h-14"
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          required
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {error && <div className="p-3 rounded-xl bg-red-50 border border-red-100 flex items-center gap-2 text-red-600 text-[10px] font-bold uppercase tracking-tight"><AlertTriangle className="h-4 w-4"/> {error}</div>}
+
+                  <PrimaryButton loading={loading} text="Update Password" disabled={loading || newPassword !== confirmPassword || !validatePassword(newPassword).valid} />
+                </form>
+              )}
+            </>
           )}
 
         </div>
       </main>
+      <Footer className="pb-24" />
       <MobileBottomBar />
     </div>
   );

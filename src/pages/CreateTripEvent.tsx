@@ -18,6 +18,7 @@ import { PhoneInput } from "@/components/creation/PhoneInput";
 import { approvalStatusSchema } from "@/lib/validation";
 import { ReviewStep } from "@/components/creation/ReviewStep";
 import { compressImages } from "@/lib/imageCompression";
+import { getCurrentDevicePosition } from "@/lib/nativePermissions";
 import { OperatingHoursSection } from "@/components/creation/OperatingHoursSection";
 import { CreateFormStepper } from "@/components/creation/CreateFormStepper";
 import { useCurrency } from "@/contexts/CurrencyContext";
@@ -124,16 +125,13 @@ const CreateTripEvent = () => {
   };
 
   const getCurrentLocation = () => {
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const mapUrl = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
-          setFormData(prev => ({ ...prev, map_link: mapUrl, latitude: pos.coords.latitude, longitude: pos.coords.longitude }));
+    getCurrentDevicePosition()
+      .then((pos) => {
+          const mapUrl = `https://www.google.com/maps?q=${pos.latitude},${pos.longitude}`;
+          setFormData(prev => ({ ...prev, map_link: mapUrl, latitude: pos.latitude, longitude: pos.longitude }));
           toast({ title: "Location Added", description: "Current location pinned." });
-        },
-        () => toast({ title: "Error", description: "Unable to get location.", variant: "destructive" })
-      );
-    }
+      })
+      .catch(() => toast({ title: "Error", description: "Unable to get location.", variant: "destructive" }));
   };
 
   const handleImageUpload = async (files: FileList | null) => {

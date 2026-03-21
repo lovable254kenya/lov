@@ -26,6 +26,7 @@ import { OperatingHoursSection } from "@/components/creation/OperatingHoursSecti
 import { ReviewStep } from "@/components/creation/ReviewStep";
 import { GeneralFacilitiesSelector } from "@/components/creation/GeneralFacilitiesSelector";
 import { CreateFormStepper } from "@/components/creation/CreateFormStepper";
+import { getCurrentDevicePosition } from "@/lib/nativePermissions";
 import { cn } from "@/lib/utils";
 import { useCurrency } from "@/contexts/CurrencyContext";
 
@@ -607,10 +608,9 @@ const CreateHotel = () => {
                   <div className={cn("p-4 rounded-[24px] border-2 transition-colors",
                     showErrors && !formData.latitude ? "border-red-500 bg-red-50" : "border-dashed border-slate-200 bg-slate-50/50")}>
                     <Button type="button" onClick={() => {
-                      navigator.geolocation.getCurrentPosition(
-                        (pos) => setFormData({ ...formData, latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
-                        () => toast({ title: "Location Error", description: "Unable to get location.", variant: "destructive" })
-                      );
+                      getCurrentDevicePosition()
+                        .then((pos) => setFormData({ ...formData, latitude: pos.latitude, longitude: pos.longitude }))
+                        .catch(() => toast({ title: "Location Error", description: "Unable to get location.", variant: "destructive" }));
                     }} className="w-full rounded-2xl px-6 h-14 font-black uppercase text-[11px] tracking-widest text-white shadow-lg active:scale-95 transition-all"
                       style={{ background: formData.latitude ? COLORS.TEAL : COLORS.CORAL }}>
                       <Navigation className="h-5 w-5 mr-3" />

@@ -26,6 +26,7 @@ import { OperatingHoursSection } from "@/components/creation/OperatingHoursSecti
 import { ReviewStep } from "@/components/creation/ReviewStep";
 import { GeneralFacilitiesSelector } from "@/components/creation/GeneralFacilitiesSelector";
 import { CreateFormStepper } from "@/components/creation/CreateFormStepper";
+import { getCurrentDevicePosition } from "@/lib/nativePermissions";
 import { cn } from "@/lib/utils";
 import { useCurrency } from "@/contexts/CurrencyContext";
 
@@ -584,14 +585,12 @@ const CreateAdventure = () => {
   };
 
   const getCurrentLocation = () => {
-    if (!("geolocation" in navigator)) return;
-    navigator.geolocation.getCurrentPosition(
-      ({ coords }) => {
-        setFormData((p) => ({ ...p, latitude: coords.latitude, longitude: coords.longitude }));
-        toast({ title: "Location captured", description: `${coords.latitude.toFixed(4)}, ${coords.longitude.toFixed(4)}` });
-      },
-      () => toast({ title: "GPS Error", description: "Could not get location.", variant: "destructive" })
-    );
+    getCurrentDevicePosition()
+      .then(({ latitude, longitude }) => {
+        setFormData((p) => ({ ...p, latitude, longitude }));
+        toast({ title: "Location captured", description: `${latitude.toFixed(4)}, ${longitude.toFixed(4)}` });
+      })
+      .catch(() => toast({ title: "GPS Error", description: "Could not get location.", variant: "destructive" }));
   };
 
   const handleGalleryUpload = async (files: FileList | null) => {

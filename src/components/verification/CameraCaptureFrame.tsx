@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { ensureCameraAccess } from "@/lib/nativePermissions";
 import { Camera, X, RotateCcw, Check, AlertCircle } from "lucide-react";
 
 const TEAL_COLOR = "#008080";
@@ -83,6 +84,11 @@ export const CameraCaptureFrame = ({ captureType, onCapture, onCancel }: CameraC
     setError(null);
     
     try {
+      const hasCameraAccess = await ensureCameraAccess();
+      if (!hasCameraAccess) {
+        throw new Error("Camera permission denied");
+      }
+
       // Stop existing stream
       if (stream) {
         stream.getTracks().forEach(track => track.stop());

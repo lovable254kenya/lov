@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from "react";
+import { getCurrentDevicePosition, watchDevicePosition } from "@/lib/nativePermissions";
 
 interface GeolocationPosition {
   latitude: number;
@@ -20,56 +21,42 @@ export const useGeolocation = () => {
     setLoading(true);
     setPermissionDenied(false);
 
-    if (!navigator.geolocation) {
-      setError("Geolocation is not supported by your browser");
-      setLoading(false);
-      return;
-    }
-
-    // Get initial position
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
+    getCurrentDevicePosition()
+      .then((pos) => {
         setPosition({
-          latitude: pos.coords.latitude,
-          longitude: pos.coords.longitude,
+          latitude: pos.latitude,
+          longitude: pos.longitude,
         });
         setLoading(false);
         setPermissionDenied(false);
-      },
-      (err) => {
+      })
+      .catch((err: any) => {
         setError(err.message);
         setLoading(false);
-        if (err.code === err.PERMISSION_DENIED) {
+        if (err.code === err.PERMISSION_DENIED || err.message?.toLowerCase().includes("denied")) {
           setPermissionDenied(true);
         }
-      },
-      {
-        enableHighAccuracy: false,
-        timeout: 5000,
-        maximumAge: 300000,
-      }
-    );
+      });
 
-    // Watch for live position updates
-    watchIdRef.current = navigator.geolocation.watchPosition(
+    watchDevicePosition(
       (pos) => {
         setPosition({
-          latitude: pos.coords.latitude,
-          longitude: pos.coords.longitude,
+          latitude: pos.latitude,
+          longitude: pos.longitude,
         });
         setPermissionDenied(false);
       },
-      (err) => {
-        if (err.code === err.PERMISSION_DENIED) {
+      (err: any) => {
+        if (err.code === err.PERMISSION_DENIED || err.message?.toLowerCase().includes("denied")) {
           setPermissionDenied(true);
         }
-      },
-      {
-        enableHighAccuracy: false,
-        timeout: 10000,
-        maximumAge: 60000,
       }
-    );
+    ).then((clearWatch) => {
+      watchIdRef.current = window.setTimeout(() => clearWatch(), 2147483647);
+    }).catch((err: any) => {
+      setError(err.message);
+      setLoading(false);
+    });
   }, [requested]);
 
   // Force request location (resets requested state)
@@ -82,34 +69,22 @@ export const useGeolocation = () => {
       setRequested(true);
       setLoading(true);
 
-      if (!navigator.geolocation) {
-        setError("Geolocation is not supported by your browser");
-        setLoading(false);
-        return;
-      }
-
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
+      getCurrentDevicePosition()
+        .then((pos) => {
           setPosition({
-            latitude: pos.coords.latitude,
-            longitude: pos.coords.longitude,
+            latitude: pos.latitude,
+            longitude: pos.longitude,
           });
           setLoading(false);
           setPermissionDenied(false);
-        },
-        (err) => {
+        })
+        .catch((err: any) => {
           setError(err.message);
           setLoading(false);
-          if (err.code === err.PERMISSION_DENIED) {
+          if (err.code === err.PERMISSION_DENIED || err.message?.toLowerCase().includes("denied")) {
             setPermissionDenied(true);
           }
-        },
-        {
-          enableHighAccuracy: false,
-          timeout: 5000,
-          maximumAge: 0,
-        }
-      );
+        });
     }, 100);
   }, []);
 
@@ -117,7 +92,7 @@ export const useGeolocation = () => {
   useEffect(() => {
     return () => {
       if (watchIdRef.current !== null) {
-        navigator.geolocation.clearWatch(watchIdRef.current);
+        clearTimeout(watchIdRef.current);
       }
     };
   }, []);

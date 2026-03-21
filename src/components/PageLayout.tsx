@@ -1,9 +1,10 @@
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Footer } from "@/components/Footer";
 import { MobileBottomBar } from "@/components/MobileBottomBar";
 import { Header } from "@/components/Header";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
 import { createContext, useContext, useState, useCallback } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface SearchFocusContextType {
   isSearchFocused: boolean;
@@ -23,8 +24,35 @@ interface PageLayoutProps {
 
 export const PageLayout = ({ children }: PageLayoutProps) => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const pathname = location.pathname;
   const [isSearchFocused, setSearchFocused] = useState(false);
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+
+  const swipeTabs = ["/", "/bookings", "/saved", user ? "/profile" : "/auth"];
+  const swipeIndex = swipeTabs.indexOf(pathname);
+
+  const handleTouchStart = useCallback((event: React.TouchEvent<HTMLDivElement>) => {
+    if (swipeIndex === -1) return;
+    const target = event.target as HTMLElement;
+    if (target.closest("input, textarea, select, button, a, [role='button']")) return;
+    setTouchStartX(event.changedTouches[0]?.clientX ?? null);
+  }, [swipeIndex]);
+
+  const handleTouchEnd = useCallback((event: React.TouchEvent<HTMLDivElement>) => {
+    if (touchStartX === null || swipeIndex === -1) return;
+    const deltaX = event.changedTouches[0]?.clientX - touchStartX;
+    if (Math.abs(deltaX) < 70) {
+      setTouchStartX(null);
+      return;
+    }
+
+    const nextIndex = deltaX < 0 ? swipeIndex + 1 : swipeIndex - 1;
+    const nextPath = swipeTabs[nextIndex];
+    if (nextPath) navigate(nextPath);
+    setTouchStartX(null);
+  }, [navigate, swipeIndex, swipeTabs, touchStartX]);
 
   const shouldShowFooter =
     pathname === "/" || pathname === "/contact" || pathname === "/about" || pathname.startsWith("/category/");
@@ -50,7 +78,7 @@ export const PageLayout = ({ children }: PageLayoutProps) => {
 
   return (
     <SearchFocusContext.Provider value={{ isSearchFocused, setSearchFocused }}>
-      <div className="w-full min-h-screen flex flex-col">
+      <div className="w-full min-h-screen flex flex-col" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
         <OfflineIndicator />
         {!shouldHideHeader && !hideHeaderForSearch && (
           <div className={shouldHideHeaderOnMobile ? "hidden md:block" : ""}>
