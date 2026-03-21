@@ -73,6 +73,9 @@ const PaymentVerify = lazy(() => import("./pages/PaymentVerify"));
 const TripEventGuide = lazy(() => import("./pages/TripEventGuide"));
 const CampsiteGuide = lazy(() => import("./pages/CampsiteGuide"));
 const HotelGuide = lazy(() => import("./pages/HotelGuide"));
+const CompanyRegistration = lazy(() => import("./pages/CompanyRegistration"));
+const CompanyPage = lazy(() => import("./pages/CompanyPage"));
+const CompanyReview = lazy(() => import("./pages/admin/CompanyReview"));
 
 
 const queryClient = new QueryClient({
@@ -219,6 +222,9 @@ const App = () => {
                     <Route path="/trip-event-guide" element={<TripEventGuide />} />
                     <Route path="/campsite-guide" element={<CampsiteGuide />} />
                     <Route path="/hotel-guide" element={<HotelGuide />} />
+                    <Route path="/company-registration" element={<CompanyRegistration />} />
+                    <Route path="/company/:companyName" element={<CompanyPage />} />
+                    <Route path="/admin/companies" element={<CompanyReview />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </div>

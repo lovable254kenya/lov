@@ -286,6 +286,57 @@ export type Database = {
           },
         ]
       }
+      companies: {
+        Row: {
+          company_name: string
+          country: string
+          created_at: string
+          email: string
+          id: string
+          phone_number: string
+          profile_photo_url: string | null
+          registration_number: string
+          rejection_reason: string | null
+          updated_at: string
+          user_id: string
+          verification_status: string
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          company_name: string
+          country: string
+          created_at?: string
+          email: string
+          id?: string
+          phone_number: string
+          profile_photo_url?: string | null
+          registration_number: string
+          rejection_reason?: string | null
+          updated_at?: string
+          user_id: string
+          verification_status?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          company_name?: string
+          country?: string
+          created_at?: string
+          email?: string
+          id?: string
+          phone_number?: string
+          profile_photo_url?: string | null
+          registration_number?: string
+          rejection_reason?: string | null
+          updated_at?: string
+          user_id?: string
+          verification_status?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: []
+      }
       host_verifications: {
         Row: {
           city: string

@@ -86,7 +86,6 @@ export const AccountSheet = ({ children }: AccountSheetProps) => {
     ]},
     { section: "Personal", items: [
       { icon: User, label: "Edit Profile", path: "/profile/edit", show: true },
-      { icon: KeyRound, label: "Change Password", path: "/forgot-password", show: true },
       { icon: CreditCard, label: "Payments & Earnings", path: "/payment", show: true },
     ]},
     { section: "Admin Control", items: [
@@ -94,6 +93,7 @@ export const AccountSheet = ({ children }: AccountSheetProps) => {
       { icon: UserCog, label: "Host Verification", path: "/admin/verification", show: userRole === "admin" },
       { icon: Settings, label: "Referral Settings", path: "/admin/referral-settings", show: userRole === "admin" },
       { icon: CalendarCheck, label: "All Bookings", path: "/admin/all-bookings", show: userRole === "admin" },
+      { icon: Briefcase, label: "Company Review", path: "/admin/companies", show: userRole === "admin" },
     ]}
   ];
 

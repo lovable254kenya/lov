@@ -31,7 +31,7 @@ interface SearchBarProps {
 interface SearchResult {
   id: string;
   name: string;
-  type: "trip" | "hotel" | "adventure" | "attraction" | "event";
+  type: "trip" | "hotel" | "adventure" | "attraction" | "event" | "company";
   location?: string;
   place?: string;
   country?: string;
@@ -128,24 +128,25 @@ export const SearchBarWithSuggestions = React.forwardRef<HTMLDivElement, SearchB
   const fetchSuggestions = async () => {
     const queryValue = value.trim().toLowerCase();
     try {
-      const [tripsData, eventsData, hotelsData, adventuresData] = await Promise.all([
+      const [tripsData, eventsData, hotelsData, adventuresData, companiesData] = await Promise.all([
         supabase.from("trips").select("id, name, location, place, country, activities, date").eq("approval_status", "approved").eq("is_hidden", false).eq("type", "trip").limit(20),
         supabase.from("trips").select("id, name, location, place, country, activities, date").eq("approval_status", "approved").eq("is_hidden", false).eq("type", "event").limit(20),
         supabase.from("hotels").select("id, name, location, place, country, activities, facilities").eq("approval_status", "approved").eq("is_hidden", false).limit(20),
-        supabase.from("adventure_places").select("id, name, location, place, country, activities, facilities").eq("approval_status", "approved").eq("is_hidden", false).limit(20)
+        supabase.from("adventure_places").select("id, name, location, place, country, activities, facilities").eq("approval_status", "approved").eq("is_hidden", false).limit(20),
+        supabase.from("companies").select("id, company_name, country").eq("verification_status", "approved").limit(10)
       ]);
 
       let combined: SearchResult[] = [
         ...(tripsData.data || []).map((item) => ({ ...item, type: "trip" as const })),
         ...(eventsData.data || []).map((item) => ({ ...item, type: "event" as const })),
         ...(hotelsData.data || []).map((item) => ({ ...item, type: "hotel" as const })),
-        ...(adventuresData.data || []).map((item) => ({ ...item, type: "adventure" as const }))
+        ...(adventuresData.data || []).map((item) => ({ ...item, type: "adventure" as const })),
+        ...(companiesData.data || []).map((item) => ({ id: item.id, name: item.company_name, type: "company" as const, country: item.country }))
       ];
 
       if (queryValue) {
         combined = combined
           .map(item => {
-            // Check if the match is via an activity name
             const activityMatch = findMatchingActivity(item.activities, queryValue);
             return { ...item, matchedActivity: activityMatch };
           })
@@ -216,11 +217,15 @@ export const SearchBarWithSuggestions = React.forwardRef<HTMLDivElement, SearchB
   const handleSuggestionClick = (result: SearchResult) => {
     setShowSuggestions(false);
     saveToHistory(result.name);
-    navigate(`/${result.type}/${result.id}`);
+    if (result.type === "company") {
+      navigate(`/company/${encodeURIComponent(result.name)}`);
+    } else {
+      navigate(`/${result.type}/${result.id}`);
+    }
   };
 
   const getTypeLabel = (type: string) => {
-    const labels: Record<string, string> = { trip: "Trip", event: "Experience", hotel: "Stay", adventure: "Campsite", attraction: "Sights" };
+    const labels: Record<string, string> = { trip: "Trip", event: "Experience", hotel: "Stay", adventure: "Campsite", attraction: "Sights", company: "Company" };
     return labels[type] || type;
   };
 
