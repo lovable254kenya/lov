@@ -14,7 +14,7 @@ import { useSavedItems } from "@/hooks/useSavedItems";
 import { useAuth } from "@/contexts/AuthContext";
 import { getLocalSavedItems, removeItemLocally } from "@/hooks/useLocalSavedItems";
 
-const ITEMS_PER_PAGE = 20;
+const ITEMS_PER_PAGE = 10;
 
 const Saved = () => {
   const [savedListings, setSavedListings] = useState<any[]>([]);
