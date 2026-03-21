@@ -96,7 +96,7 @@ export const SignupForm = () => {
       const finalUserId = existingProfile ? generateUserFriendlyId(email + Math.random()) : friendlyUserId;
       setGeneratedUserId(finalUserId);
 
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -107,15 +107,29 @@ export const SignupForm = () => {
 
       if (error) throw error;
 
-      await supabase.auth.signInWithOtp({
-        email,
-        options: { shouldCreateUser: false },
-      });
+      // Check if user already exists (Supabase returns a user with identities=[] for existing accounts)
+      if (data?.user && data.user.identities && data.user.identities.length === 0) {
+        setErrors({ email: "An account with this email already exists. Please log in instead." });
+        toast({
+          title: "Account already exists",
+          description: "This email is already registered. Please log in instead.",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
 
-      setStep("verify");
+      toast({ title: "Account created!", description: "Please check your email to verify your account, then log in." });
+      navigate("/auth");
     } catch (error: any) {
-      setErrors({ email: error.message });
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      const msg = error.message?.toLowerCase() || "";
+      if (msg.includes("already registered") || msg.includes("already been registered")) {
+        setErrors({ email: "An account with this email already exists. Please log in instead." });
+        toast({ title: "Account exists", description: "Please log in instead.", variant: "destructive" });
+      } else {
+        setErrors({ email: error.message });
+        toast({ title: "Error", description: error.message, variant: "destructive" });
+      }
     } finally {
       setLoading(false);
     }
