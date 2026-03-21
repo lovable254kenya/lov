@@ -238,102 +238,103 @@ const ForgotPassword = () => {
               <PrimaryButton loading={loading} text="Change Password" disabled={!currentPassword || !newPassword || newPassword !== confirmPassword || !validatePassword(newPassword).valid} />
             </form>
           ) : (
-          
-          {step === 'email' && (
-            <form onSubmit={handleSendCode} className="space-y-6">
-              <AuthHeader icon={Mail} title="Recovery" subtitle="Enter your email to receive a secure access code" />
-              <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Email Address</Label>
-                <Input 
-                  type="email" 
-                  className="rounded-2xl border-slate-100 bg-slate-50 h-14 focus:ring-[#008080]" 
-                  placeholder="name@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-              <PrimaryButton loading={loading} text="Send Secure Code" disabled={!email} />
-            </form>
-          )}
-
-          {step === 'verify' && (
-            <div className="space-y-8">
-              <AuthHeader icon={CheckCircle2} title="Verify" subtitle={`We've sent a code to ${email}`} />
-              
-              <div className="flex justify-center">
-                <InputOTP maxLength={6} value={otp} onChange={(v) => { setOtp(v); if (v.length === 6) handleVerifyOtp(v); }}>
-                  <InputOTPGroup className="gap-2">
-                    {[0,1,2,3,4,5].map((i) => (
-                      <InputOTPSlot 
-                        key={i} 
-                        index={i} 
-                        className="w-12 h-14 rounded-xl border-slate-200 text-lg font-black text-[#008080]" 
-                      />
-                    ))}
-                  </InputOTPGroup>
-                </InputOTP>
-              </div>
-
-              {verifying && <div className="flex justify-center items-center gap-2 text-[10px] font-black text-[#008080] uppercase tracking-widest"><Loader2 className="h-4 w-4 animate-spin" /> Verifying</div>}
-
-              <div className="text-center space-y-4">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">
-                  Didn't receive code? {countdown > 0 ? `Wait ${countdown}s` : ""}
-                </p>
-                <Button 
-                  variant="ghost" 
-                  disabled={!canResend} 
-                  onClick={handleSendCode}
-                  className="text-[#008080] font-black uppercase text-[10px] tracking-widest h-auto py-0 hover:bg-transparent"
-                >
-                  Resend Code
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {step === 'reset' && (
-            <form onSubmit={handleResetPassword} className="space-y-5">
-              <AuthHeader icon={Lock} title="New Password" subtitle="Choose a strong, unique password for your account" />
-              
-              <div className="space-y-4">
-                <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">New Password</Label>
-                  <div className="relative">
+            <>
+              {step === 'email' && (
+                <form onSubmit={handleSendCode} className="space-y-6">
+                  <AuthHeader icon={Mail} title="Recovery" subtitle="Enter your email to receive a secure access code" />
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Email Address</Label>
                     <Input 
-                      type={showPassword ? "text" : "password"} 
-                      className="rounded-2xl border-slate-100 bg-slate-50 h-14 pr-12"
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      required
-                    />
-                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300">
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                  <PasswordStrength password={newPassword} />
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Confirm Password</Label>
-                  <div className="relative">
-                    <Input 
-                      type={showConfirmPassword ? "text" : "password"} 
-                      className="rounded-2xl border-slate-100 bg-slate-50 h-14"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      type="email" 
+                      className="rounded-2xl border-slate-100 bg-slate-50 h-14 focus:ring-[#008080]" 
+                      placeholder="name@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
                       required
                     />
                   </div>
+                  <PrimaryButton loading={loading} text="Send Secure Code" disabled={!email} />
+                </form>
+              )}
+
+              {step === 'verify' && (
+                <div className="space-y-8">
+                  <AuthHeader icon={CheckCircle2} title="Verify" subtitle={`We've sent a code to ${email}`} />
+                  
+                  <div className="flex justify-center">
+                    <InputOTP maxLength={6} value={otp} onChange={(v) => { setOtp(v); if (v.length === 6) handleVerifyOtp(v); }}>
+                      <InputOTPGroup className="gap-2">
+                        {[0,1,2,3,4,5].map((i) => (
+                          <InputOTPSlot 
+                            key={i} 
+                            index={i} 
+                            className="w-12 h-14 rounded-xl border-slate-200 text-lg font-black text-[#008080]" 
+                          />
+                        ))}
+                      </InputOTPGroup>
+                    </InputOTP>
+                  </div>
+
+                  {verifying && <div className="flex justify-center items-center gap-2 text-[10px] font-black text-[#008080] uppercase tracking-widest"><Loader2 className="h-4 w-4 animate-spin" /> Verifying</div>}
+
+                  <div className="text-center space-y-4">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">
+                      Didn't receive code? {countdown > 0 ? `Wait ${countdown}s` : ""}
+                    </p>
+                    <Button 
+                      variant="ghost" 
+                      disabled={!canResend} 
+                      onClick={handleSendCode}
+                      className="text-[#008080] font-black uppercase text-[10px] tracking-widest h-auto py-0 hover:bg-transparent"
+                    >
+                      Resend Code
+                    </Button>
+                  </div>
                 </div>
-              </div>
+              )}
 
-              {error && <div className="p-3 rounded-xl bg-red-50 border border-red-100 flex items-center gap-2 text-red-600 text-[10px] font-bold uppercase tracking-tight"><AlertTriangle className="h-4 w-4"/> {error}</div>}
+              {step === 'reset' && (
+                <form onSubmit={handleResetPassword} className="space-y-5">
+                  <AuthHeader icon={Lock} title="New Password" subtitle="Choose a strong, unique password for your account" />
+                  
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">New Password</Label>
+                      <div className="relative">
+                        <Input 
+                          type={showPassword ? "text" : "password"} 
+                          className="rounded-2xl border-slate-100 bg-slate-50 h-14 pr-12"
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          required
+                        />
+                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300">
+                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
+                      <PasswordStrength password={newPassword} />
+                    </div>
 
-              <PrimaryButton loading={loading} text="Update Password" disabled={loading || newPassword !== confirmPassword || !validatePassword(newPassword).valid} />
-            </form>
-          )}
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Confirm Password</Label>
+                      <div className="relative">
+                        <Input 
+                          type={showConfirmPassword ? "text" : "password"} 
+                          className="rounded-2xl border-slate-100 bg-slate-50 h-14"
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          required
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {error && <div className="p-3 rounded-xl bg-red-50 border border-red-100 flex items-center gap-2 text-red-600 text-[10px] font-bold uppercase tracking-tight"><AlertTriangle className="h-4 w-4"/> {error}</div>}
+
+                  <PrimaryButton loading={loading} text="Update Password" disabled={loading || newPassword !== confirmPassword || !validatePassword(newPassword).valid} />
+                </form>
+              )}
+            </>
           )}
 
         </div>
