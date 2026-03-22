@@ -1,6 +1,7 @@
 import { useLocation } from "react-router-dom";
 import { Footer } from "@/components/Footer";
 import { Capacitor } from '@capacitor/core';
+import { useIsPwa } from "@/hooks/useIsPwa";
 
 interface ConditionalFooterProps {
   className?: string;
@@ -8,11 +9,13 @@ interface ConditionalFooterProps {
 
 /**
  * Footer hidden on Capacitor native apps entirely.
+ * Also hidden on small screens in PWA mode.
  * Also hidden on admin, auth, profile, booking/payment, and host pages.
  */
 export const ConditionalFooter = ({ className }: ConditionalFooterProps) => {
   const location = useLocation();
   const pathname = location.pathname;
+  const isPwa = useIsPwa();
 
   // Hide footer entirely in Capacitor native apps
   if (Capacitor.isNativePlatform()) {
@@ -51,6 +54,15 @@ export const ConditionalFooter = ({ className }: ConditionalFooterProps) => {
 
   if (shouldHide) {
     return null;
+  }
+
+  // In PWA mode, hide footer on small screens
+  if (isPwa) {
+    return (
+      <div className="hidden md:block">
+        <Footer className={className} />
+      </div>
+    );
   }
 
   return <Footer className={className} />;

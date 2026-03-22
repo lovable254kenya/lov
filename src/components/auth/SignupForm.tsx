@@ -6,36 +6,21 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2, CheckCircle2 } from "lucide-react";
 import { PasswordStrength } from "@/components/ui/password-strength";
 import { signInWithGoogleNative } from "@/lib/nativeGoogleAuth";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 
 const generateUserFriendlyId = (email: string): string => {
   const username = email.split("@")[0];
-  const cleanName = username
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9\s.-]/g, "")
-    .replace(/[\s.]+/g, "-")
-    .replace(/-+/g, "-")
-    .substring(0, 20);
-
+  const cleanName = username.toLowerCase().trim().replace(/[^a-z0-9\s.-]/g, "").replace(/[\s.]+/g, "-").replace(/-+/g, "-").substring(0, 20);
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
   let code = "";
-  for (let i = 0; i < 4; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-
+  for (let i = 0; i < 4; i++) code += chars.charAt(Math.floor(Math.random() * chars.length));
   return `${cleanName}-${code}`;
 };
 
-type FormErrors = {
-  email?: string;
-  password?: string;
-  confirmPassword?: string;
-  name?: string;
-  otp?: string;
-};
+type FormErrors = { email?: string; password?: string; confirmPassword?: string; name?: string; otp?: string };
 
 export const SignupForm = () => {
   const [email, setEmail] = useState("");
@@ -47,6 +32,9 @@ export const SignupForm = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
+  const [step, setStep] = useState<"form" | "verify">("form");
+  const [otp, setOtp] = useState("");
+  const [verifying, setVerifying] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -55,8 +43,7 @@ export const SignupForm = () => {
     if (!/[A-Z]/.test(pwd)) return { valid: false, message: "Must contain at least one uppercase letter" };
     if (!/[a-z]/.test(pwd)) return { valid: false, message: "Must contain at least one lowercase letter" };
     if (!/[0-9]/.test(pwd)) return { valid: false, message: "Must contain at least one number" };
-    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(pwd))
-      return { valid: false, message: "Must contain at least one special character" };
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(pwd)) return { valid: false, message: "Must contain at least one special character" };
     return { valid: true };
   };
 
@@ -76,15 +63,9 @@ export const SignupForm = () => {
     }
 
     setLoading(true);
-
     try {
       const friendlyUserId = generateUserFriendlyId(email);
-      const { data: existingProfile } = await supabase
-        .from("profiles")
-        .select("id")
-        .eq("id", friendlyUserId)
-        .single();
-
+      const { data: existingProfile } = await supabase.from("profiles").select("id").eq("id", friendlyUserId).single();
       const finalUserId = existingProfile ? generateUserFriendlyId(email + Math.random()) : friendlyUserId;
 
       const { data, error } = await supabase.auth.signUp({
@@ -98,24 +79,20 @@ export const SignupForm = () => {
 
       if (error) throw error;
 
-      // Check if user already exists (Supabase returns a user with identities=[] for existing accounts)
       if (data?.user && data.user.identities && data.user.identities.length === 0) {
         setErrors({ email: "An account with this email already exists. Please log in instead." });
-        toast({
-          title: "Account already exists",
-          description: "This email is already registered. Please log in instead.",
-          variant: "destructive",
-        });
+        toast({ title: "Account already exists", description: "This email is already registered.", variant: "destructive" });
         setLoading(false);
         return;
       }
 
-      toast({ title: "Account created!", description: "Please check your email to verify your account, then log in." });
-      navigate("/auth");
+      // Move to OTP verification step
+      setStep("verify");
+      toast({ title: "Account created!", description: "Check your email for a verification code." });
     } catch (error: any) {
       const msg = error.message?.toLowerCase() || "";
       if (msg.includes("already registered") || msg.includes("already been registered")) {
-        setErrors({ email: "An account with this email already exists. Please log in instead." });
+        setErrors({ email: "An account with this email already exists." });
         toast({ title: "Account exists", description: "Please log in instead.", variant: "destructive" });
       } else {
         setErrors({ email: error.message });
@@ -126,13 +103,51 @@ export const SignupForm = () => {
     }
   };
 
+  const handleVerifyOtp = async (codeToVerify?: string) => {
+    const code = codeToVerify || otp;
+    if (code.length !== 6) {
+      setErrors({ otp: "Please enter the complete 6-digit code" });
+      return;
+    }
+
+    setVerifying(true);
+    try {
+      const { error } = await supabase.auth.verifyOtp({
+        email,
+        token: code,
+        type: 'signup'
+      });
+
+      if (error) throw error;
+
+      toast({ title: "Email verified!", description: "Welcome to Realtravo!" });
+      navigate("/");
+    } catch (error: any) {
+      setErrors({ otp: "Invalid or expired code. Please try again." });
+      toast({ title: "Verification failed", description: error.message, variant: "destructive" });
+    } finally {
+      setVerifying(false);
+    }
+  };
+
+  const handleResendCode = async () => {
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email,
+      });
+      if (error) throw error;
+      toast({ title: "Code resent", description: "Check your email for a new verification code." });
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
+  };
+
   const handleGoogleSignup = async () => {
     setLoading(true);
     try {
       const result = await signInWithGoogleNative();
-      if (result) {
-        navigate("/");
-      }
+      if (result) navigate("/");
     } catch (error: any) {
       toast({ title: "Google signup failed", description: error.message, variant: "destructive" });
     } finally {
@@ -140,9 +155,75 @@ export const SignupForm = () => {
     }
   };
 
+  // OTP Verification Step
+  if (step === "verify") {
+    return (
+      <div className="space-y-6">
+        <div className="text-center space-y-2">
+          <div className="mx-auto w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center">
+            <CheckCircle2 className="h-7 w-7 text-primary" />
+          </div>
+          <h3 className="text-lg font-bold text-foreground">Verify your email</h3>
+          <p className="text-sm text-muted-foreground">
+            We sent a 6-digit code to <span className="font-medium text-foreground">{email}</span>
+          </p>
+        </div>
+
+        <div className="flex justify-center">
+          <InputOTP
+            maxLength={6}
+            value={otp}
+            onChange={(value) => {
+              setOtp(value);
+              setErrors({});
+              if (value.length === 6) {
+                setTimeout(() => handleVerifyOtp(value), 100);
+              }
+            }}
+          >
+            <InputOTPGroup>
+              <InputOTPSlot index={0} />
+              <InputOTPSlot index={1} />
+              <InputOTPSlot index={2} />
+              <InputOTPSlot index={3} />
+              <InputOTPSlot index={4} />
+              <InputOTPSlot index={5} />
+            </InputOTPGroup>
+          </InputOTP>
+        </div>
+
+        {errors.otp && <p className="text-center text-xs text-destructive">{errors.otp}</p>}
+
+        {verifying && (
+          <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" /> Verifying...
+          </div>
+        )}
+
+        <Button
+          onClick={() => handleVerifyOtp()}
+          disabled={otp.length !== 6 || verifying}
+          className="w-full h-11 rounded-xl text-sm font-semibold"
+        >
+          Confirm
+        </Button>
+
+        <div className="text-center">
+          <button
+            type="button"
+            onClick={handleResendCode}
+            className="text-sm text-primary hover:underline font-medium"
+          >
+            Didn't receive the code? Resend
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Signup Form Step
   return (
     <div className="space-y-6">
-      {/* Google Button first */}
       <button
         type="button"
         onClick={handleGoogleSignup}
@@ -157,38 +238,24 @@ export const SignupForm = () => {
         Sign up with Google
       </button>
 
-      {/* Divider */}
       <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-border" />
-        </div>
+        <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border" /></div>
         <div className="relative flex justify-center text-xs uppercase">
           <span className="bg-background px-3 text-muted-foreground font-medium">or continue with email</span>
         </div>
       </div>
 
-      {/* Signup form */}
       <form onSubmit={handleSignup} className="space-y-4">
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-2">
             <Label htmlFor="name" className="text-sm font-medium text-foreground">Full name</Label>
-            <Input
-              id="name"
-              placeholder="John Doe"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className={`h-11 rounded-xl ${errors.name ? "border-destructive" : ""}`}
-              required
-            />
+            <Input id="name" placeholder="John Doe" value={name} onChange={(e) => setName(e.target.value)} className={`h-11 rounded-xl ${errors.name ? "border-destructive" : ""}`} required />
             {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
           </div>
-
           <div className="space-y-2">
             <Label htmlFor="gender" className="text-sm font-medium text-foreground">Gender</Label>
             <Select value={gender} onValueChange={setGender}>
-              <SelectTrigger className="h-11 rounded-xl">
-                <SelectValue placeholder="Select" />
-              </SelectTrigger>
+              <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Select" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="male">Male</SelectItem>
                 <SelectItem value="female">Female</SelectItem>
@@ -201,35 +268,15 @@ export const SignupForm = () => {
 
         <div className="space-y-2">
           <Label htmlFor="signup-email" className="text-sm font-medium text-foreground">Email address</Label>
-          <Input
-            id="signup-email"
-            type="email"
-            placeholder="you@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className={`h-11 rounded-xl ${errors.email ? "border-destructive" : ""}`}
-            required
-          />
+          <Input id="signup-email" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} className={`h-11 rounded-xl ${errors.email ? "border-destructive" : ""}`} required />
           {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="signup-password" className="text-sm font-medium text-foreground">Password</Label>
           <div className="relative">
-            <Input
-              id="signup-password"
-              type={showPassword ? "text" : "password"}
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className={`h-11 rounded-xl pr-10 ${errors.password ? "border-destructive" : ""}`}
-              required
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-            >
+            <Input id="signup-password" type={showPassword ? "text" : "password"} placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} className={`h-11 rounded-xl pr-10 ${errors.password ? "border-destructive" : ""}`} required />
+            <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
@@ -240,20 +287,8 @@ export const SignupForm = () => {
         <div className="space-y-2">
           <Label htmlFor="confirmPassword" className="text-sm font-medium text-foreground">Confirm password</Label>
           <div className="relative">
-            <Input
-              id="confirmPassword"
-              type={showConfirmPassword ? "text" : "password"}
-              placeholder="••••••••"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className={`h-11 rounded-xl pr-10 ${errors.confirmPassword ? "border-destructive" : ""}`}
-              required
-            />
-            <button
-              type="button"
-              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-            >
+            <Input id="confirmPassword" type={showConfirmPassword ? "text" : "password"} placeholder="••••••••" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className={`h-11 rounded-xl pr-10 ${errors.confirmPassword ? "border-destructive" : ""}`} required />
+            <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
               {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
@@ -261,21 +296,13 @@ export const SignupForm = () => {
         </div>
 
         <Button type="submit" className="w-full h-11 rounded-xl text-sm font-semibold" disabled={loading}>
-          {loading ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-              Creating account...
-            </>
-          ) : (
-            "Create Account"
-          )}
+          {loading ? (<><Loader2 className="h-4 w-4 animate-spin mr-2" />Creating account...</>) : "Create Account"}
         </Button>
 
         <p className="text-center text-xs text-muted-foreground leading-relaxed">
           By signing up, you agree to our{" "}
-          <a href="/terms" className="text-primary hover:underline">Terms of Service</a>{" "}
-          and{" "}
-          <a href="/privacy" className="text-primary hover:underline">Privacy Policy</a>.
+          <a href="/terms-of-service" className="text-primary hover:underline">Terms of Service</a>{" "}and{" "}
+          <a href="/privacy-policy" className="text-primary hover:underline">Privacy Policy</a>.
         </p>
       </form>
     </div>

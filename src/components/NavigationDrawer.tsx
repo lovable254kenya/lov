@@ -1,26 +1,22 @@
 import { useState, useEffect } from "react";
 import { 
-  Home, Ticket, Heart, Phone, Info, LogIn, LogOut, User, 
-  FileText, Shield, ChevronRight, Trophy, Map, Mountain, Bed, Building2 
+  Phone, Info, LogIn, LogOut, User, 
+  FileText, Shield, ChevronRight, Building2, Globe, Languages, Coins
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
 import { useCurrency } from "@/contexts/CurrencyContext";
-import { Capacitor } from '@capacitor/core';
 import { Button } from "@/components/ui/button";
 
 interface NavigationDrawerProps {
   onClose: () => void;
 }
 
-const Separator = () => (
-  <hr className="my-1 border-slate-100 dark:border-gray-800/50" />
-);
-
 const LANGUAGES = [
   { code: "en", name: "English" },
+  { code: "sw", name: "Kiswahili" },
   { code: "fr", name: "Français" },
   { code: "es", name: "Español" },
   { code: "pt", name: "Português" },
@@ -33,11 +29,12 @@ const LANGUAGES = [
 export const NavigationDrawer = ({ onClose }: NavigationDrawerProps) => {
   const { user, signOut } = useAuth();
   const { t, i18n } = useTranslation();
-  const { currency, setCurrency, rate, loading: rateLoading } = useCurrency();
+  const { currency, setCurrency } = useCurrency();
   const [userName, setUserName] = useState("");
   const [userAvatar, setUserAvatar] = useState<string | null>(null);
   const [language, setLanguage] = useState(i18n.language || "en");
-  const isNative = Capacitor.isNativePlatform();
+  const [showLangPicker, setShowLangPicker] = useState(false);
+  const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -55,173 +52,155 @@ export const NavigationDrawer = ({ onClose }: NavigationDrawerProps) => {
     setLanguage(lang);
     i18n.changeLanguage(lang);
     document.documentElement.dir = (lang === "ar" || lang === "he") ? "rtl" : "ltr";
+    setShowLangPicker(false);
   };
 
-  const handleProtectedNavigation = (path: string) => {
-    const publicGuestPaths = ["/bookings"];
-    window.location.href = user || publicGuestPaths.includes(path) ? path : "/auth";
-    onClose();
-  };
-
-  const NavItem = ({ icon: Icon, label, path, isProtected = false }: any) => (
-    <li>
-      <button
-        onClick={() => isProtected ? handleProtectedNavigation(path) : (window.location.href = path, onClose())}
-        className="w-full flex items-center justify-between px-4 py-3 rounded-xl hover:bg-slate-50 transition-all group"
-      >
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-slate-100 group-hover:bg-[#008080] transition-colors">
-            <Icon className="h-4 w-4 text-slate-600 group-hover:text-white" />
-          </div>
-          <span className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-600 group-hover:text-slate-900">
-            {label}
-          </span>
+  const NavItem = ({ icon: Icon, label, path, onClick }: { icon: any; label: string; path?: string; onClick?: () => void }) => (
+    <button
+      onClick={() => {
+        if (onClick) { onClick(); return; }
+        if (path) window.location.href = path;
+        onClose();
+      }}
+      className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-muted/50 transition-all active:scale-[0.98] group"
+    >
+      <div className="flex items-center gap-3">
+        <div className="p-2 rounded-xl bg-muted group-hover:bg-primary transition-colors">
+          <Icon className="h-4 w-4 text-muted-foreground group-hover:text-primary-foreground" />
         </div>
-        <ChevronRight className="h-3 w-3 text-slate-300 group-hover:text-[#008080] transition-transform group-hover:translate-x-1" />
-      </button>
-      <Separator />
-    </li>
+        <span className="text-sm font-medium text-foreground">{label}</span>
+      </div>
+      <ChevronRight className="h-4 w-4 text-muted-foreground/40 group-hover:text-primary transition-colors" />
+    </button>
   );
 
-  return (
-    <div className="flex flex-col h-full bg-white">
-      {/* Brand Header with custom CANCEL button */}
-      <div className="p-6 bg-white border-b border-slate-100 flex items-center justify-between">
-        <div>
-          <span 
-            className="font-bold text-2xl tracking-tight leading-none block italic"
-            style={{
-              background: "linear-gradient(to right, #1a365d, #2b6cb0, #4fd1c5)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              filter: "drop-shadow(0px 2px 2px rgba(0,0,0,0.1))"
-            }}
-          >
-            RealTravo
-          </span>
-        </div>
+  const currentLangName = LANGUAGES.find(l => l.code === language)?.name || "English";
 
-        {/* Custom Cancel Button */}
+  return (
+    <div className="flex flex-col h-full bg-background">
+      {/* Header */}
+      <div className="px-5 pt-5 pb-4 border-b border-border flex items-center justify-between">
+        <Link to="/" onClick={onClose} className="flex items-center gap-2">
+          <img src="/fulllogo.png" alt="Realtravo" className="h-7" />
+        </Link>
         <Button 
           variant="ghost" 
+          size="sm"
           onClick={onClose}
-          className="h-8 px-2 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg"
+          className="text-xs font-medium text-muted-foreground hover:text-foreground"
         >
-          Cancel
+          Close
         </Button>
       </div>
 
-      <nav className="flex-1 p-4 overflow-y-auto scrollbar-hide">
-        {/* User Account Section */}
-        <div className="mb-6">
+      <div className="flex-1 overflow-y-auto">
+        {/* User Section */}
+        <div className="p-4">
           {user ? (
-            <div className="p-4 rounded-2xl border border-slate-100 bg-slate-50/50">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 overflow-hidden">
-                    {userAvatar ? (
-                      <img src={userAvatar} alt={userName} className="h-full w-full object-cover" referrerPolicy="no-referrer" />
-                    ) : (
-                      <User className="h-4 w-4" />
-                    )}
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-slate-700 truncate max-w-[120px]">
-                      {userName || t('drawer.traveler')}
-                    </p>
-                    <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">
-                      {t('nav.account')}
-                    </span>
-                  </div>
-                </div>
-                <button 
-                  onClick={() => { signOut(); onClose(); }}
-                  className="p-2 rounded-lg hover:bg-red-50 text-red-400 hover:text-red-600 transition-colors"
-                  title="Logout"
-                >
-                  <LogOut className="h-4 w-4" />
-                </button>
+            <div className="flex items-center gap-3 p-3 rounded-2xl bg-muted/50 border border-border">
+              <div className="h-11 w-11 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
+                {userAvatar ? (
+                  <img src={userAvatar} alt={userName} className="h-full w-full object-cover" referrerPolicy="no-referrer" />
+                ) : (
+                  <User className="h-5 w-5 text-primary" />
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-foreground truncate">{userName || "Traveler"}</p>
+                <p className="text-xs text-muted-foreground">{user.email}</p>
               </div>
             </div>
           ) : (
             <Link
               to="/auth" onClick={onClose}
-              className="flex items-center justify-center w-full py-3 rounded-xl border-2 border-[#008080] text-[#008080] hover:bg-[#008080] hover:text-white transition-all"
+              className="flex items-center justify-center w-full py-3 rounded-xl bg-primary text-primary-foreground hover:brightness-110 transition-all"
             >
               <LogIn className="h-4 w-4 mr-2" />
-              <span className="text-[10px] font-black uppercase tracking-widest">{t('nav.loginRegister')}</span>
+              <span className="text-sm font-semibold">{t('nav.loginRegister')}</span>
             </Link>
           )}
         </div>
 
-        <ul className="space-y-1">
-          <p className="px-4 text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">{t('drawer.mainMenu')}</p>
-          <NavItem icon={Home} label={t('nav.home')} path="/" />
-          <NavItem icon={Ticket} label={t('nav.myBookings')} path="/bookings" isProtected />
-          <NavItem icon={Heart} label={t('nav.wishlist')} path="/saved" isProtected />
-          
-          <div className="h-4" />
-          <p className="px-4 text-[9px] font-black text-[#008080] uppercase tracking-[0.2em] mb-2">{t('drawer.exploreCategories')}</p>
-          <NavItem icon={Trophy} label={t('drawer.eventsAndSports')} path="/category/events" />
-          <NavItem icon={Map} label={t('drawer.tripsAndTours')} path="/category/trips" />
-          <NavItem icon={Mountain} label={t('drawer.adventurePlaces')} path="/category/campsite" />
-          <NavItem icon={Building2} label={t('drawer.accommodationOnly')} path="/category/accommodation" />
-          <NavItem icon={Bed} label={t('drawer.hotel')} path="/category/hotels" />
+        {/* Companies */}
+        <div className="px-2">
+          <p className="px-4 pt-2 pb-1 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Companies</p>
+          <div className="rounded-xl overflow-hidden border border-border mx-2">
+            <NavItem icon={Building2} label="Browse Companies" path="/company" />
+          </div>
+        </div>
 
-          <div className="h-4" />
-          <p className="px-4 text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">{t('drawer.supportLegal')}</p>
-          <NavItem icon={Phone} label={t('drawer.contact')} path="/contact" />
-          <NavItem icon={Info} label={t('drawer.about')} path="/about" />
-          <NavItem icon={FileText} label={t('drawer.terms')} path="/terms-of-service" />
-          <NavItem icon={Shield} label={t('drawer.privacy')} path="/privacy-policy" />
-        </ul>
+        {/* Support & Legal */}
+        <div className="px-2 mt-4">
+          <p className="px-4 pt-2 pb-1 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{t('drawer.supportLegal')}</p>
+          <div className="rounded-xl overflow-hidden border border-border mx-2 divide-y divide-border">
+            <NavItem icon={Phone} label={t('drawer.contact')} path="/contact" />
+            <NavItem icon={Info} label={t('drawer.about')} path="/about" />
+            <NavItem icon={FileText} label={t('drawer.terms')} path="/terms-of-service" />
+            <NavItem icon={Shield} label={t('drawer.privacy')} path="/privacy-policy" />
+          </div>
+        </div>
 
-        {isNative && (
-          <div className="mt-4 space-y-4 px-4 pb-4">
-            <div className="h-px bg-slate-100" />
-            <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">{t('footer.currency', 'Currency')}</p>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setCurrency("KES")}
-                className={`flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-all ${
-                  currency === "KES" ? "bg-[#008080] text-white" : "bg-slate-100 text-slate-500"
-                }`}
-              >
-                KSh
-              </button>
-              <button
-                onClick={() => setCurrency("USD")}
-                className={`flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-all ${
-                  currency === "USD" ? "bg-[#008080] text-white" : "bg-slate-100 text-slate-500"
-                }`}
-              >
-                USD
-              </button>
-            </div>
-            
-            <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">{t('footer.language', 'Language')}</p>
-            <select
-              value={language}
-              onChange={(e) => handleLanguageChange(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg bg-slate-100 text-slate-700 text-xs font-bold focus:outline-none cursor-pointer"
+        {/* Preferences */}
+        <div className="px-2 mt-4">
+          <p className="px-4 pt-2 pb-1 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Preferences</p>
+          <div className="rounded-xl overflow-hidden border border-border mx-2 divide-y divide-border">
+            <NavItem icon={Languages} label={`Language: ${currentLangName}`} onClick={() => setShowLangPicker(!showLangPicker)} />
+            {showLangPicker && (
+              <div className="p-3 bg-muted/30 grid grid-cols-2 gap-1.5">
+                {LANGUAGES.map((l) => (
+                  <button
+                    key={l.code}
+                    onClick={() => handleLanguageChange(l.code)}
+                    className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${
+                      language === l.code 
+                        ? "bg-primary text-primary-foreground" 
+                        : "bg-background text-foreground hover:bg-muted border border-border"
+                    }`}
+                  >
+                    {l.name}
+                  </button>
+                ))}
+              </div>
+            )}
+            <NavItem icon={Coins} label={`Currency: ${currency}`} onClick={() => setShowCurrencyPicker(!showCurrencyPicker)} />
+            {showCurrencyPicker && (
+              <div className="p-3 bg-muted/30 flex gap-2">
+                {["KES", "USD"].map((cur) => (
+                  <button
+                    key={cur}
+                    onClick={() => { setCurrency(cur as any); setShowCurrencyPicker(false); }}
+                    className={`flex-1 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+                      currency === cur 
+                        ? "bg-primary text-primary-foreground" 
+                        : "bg-background text-foreground hover:bg-muted border border-border"
+                    }`}
+                  >
+                    {cur === "KES" ? "KSh (KES)" : "$ (USD)"}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Logout */}
+        {user && (
+          <div className="px-4 mt-4 mb-4">
+            <button 
+              onClick={() => { signOut(); onClose(); }}
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-destructive/20 text-destructive hover:bg-destructive/5 transition-all active:scale-[0.98]"
             >
-              {LANGUAGES.map((l) => (
-                <option key={l.code} value={l.code}>{l.name}</option>
-              ))}
-            </select>
+              <LogOut className="h-4 w-4" />
+              <span className="text-sm font-semibold">Log Out</span>
+            </button>
           </div>
         )}
-      </nav>
+      </div>
       
-      <div className="p-6 border-t border-slate-50 bg-slate-50/30">
-        <p className="text-[10px] leading-relaxed text-slate-400 mb-4 text-center">
-          <span className="font-black text-slate-500 uppercase tracking-tighter">{t('drawer.transparency')}</span> {t('drawer.transparencyText')} <span className="text-[#008080] font-bold">{t('drawer.transparencyHighlight')}</span>.
+      <div className="p-4 border-t border-border">
+        <p className="text-center text-[10px] text-muted-foreground">
+          © {new Date().getFullYear()} Realtravo. All rights reserved.
         </p>
-        <div className="text-center">
-          <span className="text-[9px] font-bold text-slate-300 uppercase tracking-[0.3em]">
-            RealTravo v1.0
-          </span>
-        </div>
       </div>
     </div>
   );

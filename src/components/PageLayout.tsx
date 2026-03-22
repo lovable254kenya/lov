@@ -5,6 +5,7 @@ import { Header } from "@/components/Header";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
 import { createContext, useContext, useState, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useIsPwa } from "@/hooks/useIsPwa";
 
 interface SearchFocusContextType {
   isSearchFocused: boolean;
@@ -29,8 +30,9 @@ export const PageLayout = ({ children }: PageLayoutProps) => {
   const pathname = location.pathname;
   const [isSearchFocused, setSearchFocused] = useState(false);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
+  const isPwa = useIsPwa();
 
-  const swipeTabs = ["/", "/bookings", "/saved", user ? "/profile" : "/auth"];
+  const swipeTabs = ["/", "/bookings", "/saved"];
   const swipeIndex = swipeTabs.indexOf(pathname);
 
   const handleTouchStart = useCallback((event: React.TouchEvent<HTMLDivElement>) => {
@@ -58,9 +60,8 @@ export const PageLayout = ({ children }: PageLayoutProps) => {
     pathname === "/" || pathname === "/contact" || pathname === "/about" || pathname.startsWith("/category/");
 
   const shouldHideMobileBar =
-    pathname === "/host-verification";
+    pathname === "/host-verification" || pathname === "/auth" || pathname === "/complete-profile";
 
-  // Auth page renders its own header
   const isDetailPage =
     pathname.startsWith("/adventure/") || pathname.startsWith("/hotel/") ||
     pathname.startsWith("/event/") || pathname.startsWith("/trip/");
@@ -70,11 +71,11 @@ export const PageLayout = ({ children }: PageLayoutProps) => {
     pathname === "/verify-email" || pathname === "/complete-profile" || pathname.startsWith("/booking/") ||
     isDetailPage;
 
-  // On mobile, only show header on index page
   const shouldHideHeaderOnMobile = pathname !== "/";
-
-  // Hide header completely when search is focused
   const hideHeaderForSearch = isSearchFocused;
+
+  // In PWA on small screens, hide footer everywhere
+  const showFooterDesktopOnly = isPwa;
 
   return (
     <SearchFocusContext.Provider value={{ isSearchFocused, setSearchFocused }}>
@@ -85,9 +86,12 @@ export const PageLayout = ({ children }: PageLayoutProps) => {
             <Header __fromLayout />
           </div>
         )}
-        {/* pt-14 on md+ for fixed header; on mobile header is not fixed so no top padding needed */}
         <div className={`flex-1 w-full pb-20 md:pb-0 ${!shouldHideHeader && !hideHeaderForSearch ? (shouldHideHeaderOnMobile ? 'pt-0 md:pt-14' : 'pt-0 md:pt-14') : ''}`}>{children}</div>
-        {shouldShowFooter && <div className="hidden md:block"><Footer /></div>}
+        {shouldShowFooter && (
+          <div className={showFooterDesktopOnly ? "hidden md:block" : "hidden md:block"}>
+            <Footer />
+          </div>
+        )}
         {!shouldHideMobileBar && <MobileBottomBar />}
       </div>
     </SearchFocusContext.Provider>
