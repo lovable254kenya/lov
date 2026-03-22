@@ -77,9 +77,9 @@ export const NavigationDrawer = ({ onClose }: NavigationDrawerProps) => {
   const currentLangName = LANGUAGES.find(l => l.code === language)?.name || "English";
 
   return (
-    <div className="flex flex-col h-full bg-background">
+    <div className="flex flex-col h-full bg-background overflow-hidden">
       {/* Header */}
-      <div className="px-5 pt-5 pb-4 border-b border-border flex items-center justify-between">
+      <div className="px-5 pt-5 pb-4 border-b border-border flex items-center justify-between flex-shrink-0">
         <Link to="/" onClick={onClose} className="flex items-center gap-2">
           <img src="/fulllogo.png" alt="Realtravo" className="h-7" />
         </Link>
@@ -89,11 +89,11 @@ export const NavigationDrawer = ({ onClose }: NavigationDrawerProps) => {
           onClick={onClose}
           className="text-xs font-medium text-muted-foreground hover:text-foreground"
         >
-          Close
+          Cancel
         </Button>
       </div>
 
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] pb-6">
         {/* User Section */}
         <div className="p-4">
           {user ? (
@@ -196,7 +196,6 @@ export const NavigationDrawer = ({ onClose }: NavigationDrawerProps) => {
           </div>
         )}
       </div>
-      
     </div>
   );
 };
