@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { SignupForm } from "@/components/auth/SignupForm";
 import { SEOHead } from "@/components/SEOHead";
-import { ArrowLeft, Home, MapPin, Shield, Star } from "lucide-react";
+import { Home, MapPin, Shield, Star } from "lucide-react";
 
 const Auth = () => {
   const [activeTab, setActiveTab] = useState<"login" | "signup">("login");
@@ -82,13 +82,6 @@ const Auth = () => {
       <div className="flex-1 flex flex-col min-h-screen bg-background">
         {/* Mobile top bar */}
         <div className="flex items-center justify-between p-4 lg:p-8 lg:pb-0">
-          <button
-            onClick={() => navigate("/")}
-            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span className="text-sm font-medium">Back</span>
-          </button>
           <img src="/fulllogo.png" alt="Realtravo" className="h-7 lg:hidden" />
           <button
             type="button"
