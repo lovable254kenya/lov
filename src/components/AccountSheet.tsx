@@ -11,19 +11,10 @@ import {
 } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { 
-  ChevronRight, User, Briefcase, CreditCard, Shield, 
-  LogOut, UserCog, KeyRound,
+  ChevronRight, User, Briefcase, CreditCard, Shield,
+  LogOut, UserCog,
   CalendarCheck, Settings, LayoutDashboard 
 } from "lucide-react";
-
-const COLORS = {
-  TEAL: "#008080",
-  CORAL: "#FF7F50",
-  KHAKI: "#F0E68C",
-  KHAKI_DARK: "#857F3E",
-  RED: "#FF0000",
-  SOFT_GRAY: "#F8F9FA"
-};
 
 interface AccountSheetProps {
   children: React.ReactNode;
@@ -85,7 +76,7 @@ export const AccountSheet = ({ children }: AccountSheetProps) => {
       { icon: CalendarCheck, label: "My Host Bookings", path: "/host-bookings", show: true },
     ]},
     { section: "Personal", items: [
-      { icon: User, label: "Edit Profile", path: "/profile/edit", show: true },
+      { icon: User, label: "Profile & Security", path: "/profile", show: true },
       { icon: CreditCard, label: "Payments & Earnings", path: "/payment", show: true },
     ]},
     { section: "Admin Control", items: [
@@ -103,32 +94,30 @@ export const AccountSheet = ({ children }: AccountSheetProps) => {
         {children}
       </SheetTrigger>
       
-      <SheetContent className="w-full sm:max-w-md p-0 border-none bg-[#F8F9FA] flex flex-col">
-        {/* COMPACT HEADER - Settings & My Account together */}
-        <div className="px-6 pt-5 pb-4 bg-white border-b border-slate-100 flex-shrink-0">
+      <SheetContent className="w-full sm:max-w-md p-0 pb-24 border-none bg-background flex flex-col">
+        <div className="px-6 pt-5 pb-4 bg-background border-b border-border flex-shrink-0">
           <SheetHeader>
             <div className="flex items-baseline gap-2">
-              <SheetTitle className="text-xl font-black uppercase tracking-tighter" style={{ color: COLORS.TEAL }}>
+              <SheetTitle className="text-xl font-black uppercase tracking-tighter text-primary">
                 My Account
               </SheetTitle>
             </div>
           </SheetHeader>
           
-          {/* User Profile Info */}
           {!loading && userName && (
-            <div className="flex items-center gap-3 mt-4 p-3 bg-gradient-to-r from-[#008080]/5 to-transparent rounded-xl border border-[#008080]/10">
-              <div className="h-12 w-12 rounded-full bg-[#008080] flex items-center justify-center border-2 border-[#008080]/20 overflow-hidden">
+            <div className="flex items-center gap-3 mt-4 p-3 rounded-2xl border border-border bg-card">
+              <div className="h-12 w-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center border border-primary/20 overflow-hidden">
                 {userAvatar ? (
                   <img src={userAvatar} alt={userName} className="h-full w-full object-cover" referrerPolicy="no-referrer" />
                 ) : (
-                  <span className="text-white font-bold text-lg">
+                  <span className="font-bold text-lg">
                     {userName.charAt(0).toUpperCase()}
                   </span>
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-slate-800 truncate">{userName}</p>
-                <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
+                <p className="text-sm font-bold text-foreground truncate">{userName}</p>
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
                   {userRole === "admin" ? "Administrator" : "Member"}
                 </p>
               </div>
@@ -146,32 +135,31 @@ export const AccountSheet = ({ children }: AccountSheetProps) => {
             </div>
           ) : ( 
             <div className="space-y-4">
-              {/* Menu Sections - Compact spacing */}
               {menuItems.map((section, idx) => {
                 const visibleItems = section.items.filter(item => item.show);
                 if (visibleItems.length === 0) return null;
 
                 return (
                   <div key={idx} className="space-y-2">
-                    <h3 className="ml-2 text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                    <h3 className="ml-2 text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em]">
                       {section.section}
                     </h3>
-                    <div className="bg-white rounded-[20px] overflow-hidden shadow-sm border border-slate-100 divide-y divide-slate-50">
+                    <div className="bg-card rounded-[20px] overflow-hidden shadow-sm border border-border divide-y divide-border/60">
                       {visibleItems.map((item) => (
                         <button 
                           key={item.path} 
                           onClick={() => handleNavigate(item.path)} 
-                          className="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-50 transition-all active:scale-[0.98] group"
+                          className="w-full flex items-center justify-between px-4 py-3 hover:bg-muted/40 transition-all active:scale-[0.98] group"
                         >
                           <div className="flex items-center gap-3">
-                            <div className="p-1.5 rounded-lg bg-[#F0E68C]/10 group-hover:bg-[#008080] transition-colors">
-                              <item.icon className="h-4 w-4 text-[#857F3E] group-hover:text-white" />
+                            <div className="p-1.5 rounded-lg bg-muted group-hover:bg-primary transition-colors">
+                              <item.icon className="h-4 w-4 text-muted-foreground group-hover:text-primary-foreground" />
                             </div>
-                            <span className="text-[11px] font-black uppercase tracking-tight text-slate-700">
+                            <span className="text-[11px] font-black uppercase tracking-tight text-foreground">
                               {item.label}
                             </span>
                           </div>
-                          <ChevronRight className="h-4 w-4 text-slate-300 group-hover:text-[#008080] transition-colors" />
+                          <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
                         </button>
                       ))}
                     </div>
@@ -179,20 +167,19 @@ export const AccountSheet = ({ children }: AccountSheetProps) => {
                 );
               })}
 
-              {/* Logout Button - Compact */}
               <button 
                 onClick={handleLogout} 
-                className="w-full flex items-center justify-between px-4 py-3 bg-white rounded-[20px] border border-red-50 shadow-sm hover:bg-red-50/50 transition-all group"
+                className="w-full flex items-center justify-between px-4 py-3 bg-card rounded-[20px] border border-destructive/15 shadow-sm hover:bg-destructive/5 transition-all group"
               >
                 <div className="flex items-center gap-3">
-                  <div className="p-1.5 rounded-lg bg-red-50 group-hover:bg-red-500 transition-colors">
-                    <LogOut className="h-4 w-4 text-red-500 group-hover:text-white" />
+                  <div className="p-1.5 rounded-lg bg-destructive/10 group-hover:bg-destructive transition-colors">
+                    <LogOut className="h-4 w-4 text-destructive group-hover:text-destructive-foreground" />
                   </div>
-                  <span className="text-[11px] font-black uppercase tracking-tight text-red-500">
+                  <span className="text-[11px] font-black uppercase tracking-tight text-destructive">
                     Log Out
                   </span>
                 </div>
-                <ChevronRight className="h-4 w-4 text-red-200 group-hover:text-red-500" />
+                <ChevronRight className="h-4 w-4 text-destructive/40 group-hover:text-destructive" />
               </button>
             </div>
           )}

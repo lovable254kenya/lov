@@ -189,7 +189,7 @@ export const NotificationBell = () => {
           </button>
         </SheetTrigger>
         
-        <SheetContent className="w-full sm:max-w-md p-0 border-none bg-[#F8F9FA]">
+        <SheetContent className="w-full sm:max-w-md p-0 pb-24 border-none bg-background">
           <div className="p-6 bg-white border-b border-slate-100">
             <SheetHeader>
               <div className="flex items-center justify-between">

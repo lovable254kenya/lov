@@ -87,7 +87,7 @@ export const PageLayout = ({ children }: PageLayoutProps) => {
         )}
         {/* pt-14 on md+ for fixed header; on mobile header is not fixed so no top padding needed */}
         <div className={`flex-1 w-full pb-20 md:pb-0 ${!shouldHideHeader && !hideHeaderForSearch ? (shouldHideHeaderOnMobile ? 'pt-0 md:pt-14' : 'pt-0 md:pt-14') : ''}`}>{children}</div>
-        {shouldShowFooter && <Footer />}
+        {shouldShowFooter && <div className="hidden md:block"><Footer /></div>}
         {!shouldHideMobileBar && <MobileBottomBar />}
       </div>
     </SearchFocusContext.Provider>

@@ -308,7 +308,7 @@ serve(async (req) => {
             data: {
               status: transaction.status,
               reference: transaction.reference,
-              amount: Number(bookingData.total_amount ?? transaction.amount / 100 ?? 0),
+               amount: Number(bookingData.total_amount ?? (transaction.amount / 100)),
               paid_at: transaction.paid_at,
               channel: transaction.channel,
               currency: transaction.currency,
