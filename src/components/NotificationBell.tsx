@@ -189,7 +189,7 @@ export const NotificationBell = () => {
           </button>
         </SheetTrigger>
         
-        <SheetContent className="w-full sm:max-w-md p-0 pb-24 border-none bg-background">
+        <SheetContent className="w-full sm:max-w-md p-0 pb-24 border-none bg-background [&>button]:hidden">
           <div className="p-6 bg-white border-b border-slate-100">
             <SheetHeader>
               <div className="flex items-center justify-between">
@@ -199,16 +199,21 @@ export const NotificationBell = () => {
                     Inbox
                   </SheetTitle>
                 </div>
-                {unreadCount > 0 && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={markAllAsRead}
-                    className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-[#008080] hover:bg-[#008080]/10"
-                  >
-                    Clear All
-                  </Button>
-                )}
+                <div className="flex items-center gap-2">
+                  {unreadCount > 0 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={markAllAsRead}
+                      className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-[#008080] hover:bg-[#008080]/10"
+                    >
+                      Clear All
+                    </Button>
+                  )}
+                  <button onClick={() => setIsOpen(false)} className="text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors">
+                    Cancel
+                  </button>
+                </div>
               </div>
             </SheetHeader>
           </div>

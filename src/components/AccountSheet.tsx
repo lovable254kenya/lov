@@ -94,13 +94,16 @@ export const AccountSheet = ({ children }: AccountSheetProps) => {
         {children}
       </SheetTrigger>
       
-      <SheetContent className="w-full sm:max-w-md p-0 pb-24 border-none bg-background flex flex-col">
+       <SheetContent className="w-full sm:max-w-md p-0 pb-24 border-none bg-background flex flex-col [&>button]:hidden">
         <div className="px-6 pt-5 pb-4 bg-background border-b border-border flex-shrink-0">
           <SheetHeader>
-            <div className="flex items-baseline gap-2">
+            <div className="flex items-center justify-between">
               <SheetTitle className="text-xl font-black uppercase tracking-tighter text-primary">
                 My Account
               </SheetTitle>
+              <button onClick={() => setIsOpen(false)} className="text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors">
+                Cancel
+              </button>
             </div>
           </SheetHeader>
           
