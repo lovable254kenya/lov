@@ -524,9 +524,8 @@ const CreateHotel = () => {
       <div className="relative w-full h-[25vh] md:h-[30vh] bg-slate-900 overflow-hidden">
         <img src="/images/category-hotels.webp" className="w-full h-full object-cover opacity-50" alt="Hotel Header" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#F8F9FA] via-transparent to-transparent" />
-        <div className="absolute top-4 left-4">
-          <Button onClick={goBack} className="rounded-full bg-black/30 backdrop-blur-md text-white border-none w-10 h-10 p-0"><ArrowLeft className="h-5 w-5" /></Button>
-        </div>
+
+
         <div className="absolute bottom-8 left-0 w-full px-8 container mx-auto">
           <h1 className="text-2xl md:text-4xl font-black uppercase tracking-tighter leading-none text-white drop-shadow-2xl">
             List Your <span style={{ color: COLORS.TEAL }}>Property</span>
