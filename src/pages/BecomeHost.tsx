@@ -165,9 +165,7 @@ const BecomeHost = () => {
         <Header />
         <main className="flex-1 container px-4 py-12 mx-auto mb-24 md:mb-12">
           <div className="flex items-center gap-3 mb-8">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/")} className="rounded-full bg-white shadow-sm border border-slate-100">
-              <ArrowLeft className="h-5 w-5 text-slate-600" />
-            </Button>
+
             <h1 className="text-3xl md:text-4xl font-black uppercase tracking-tighter text-slate-900">
               Become a <span style={{ color: COLORS.CORAL }}>Host</span>
             </h1>
@@ -224,9 +222,7 @@ const BecomeHost = () => {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
           <div className="space-y-2">
             <div className="flex items-center gap-3 mb-4">
-               <Button variant="ghost" size="icon" onClick={() => navigate("/")} className="rounded-full bg-white shadow-sm border border-slate-100 hover:bg-slate-50">
-                <ArrowLeft className="h-5 w-5 text-slate-600" />
-              </Button>
+
               <Badge className="bg-[#008080] hover:bg-[#008080] text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
                 {isCompany ? "Company Dashboard" : "Host Dashboard"}
               </Badge>

@@ -135,9 +135,8 @@ const AdminReviewDetail = () => {
 
       <div className="relative w-full h-[45vh] md:h-[55vh] overflow-hidden">
         <div className="absolute top-4 left-4 right-4 z-50 flex justify-between">
-          <Button onClick={() => navigate(-1)} className="rounded-full bg-black/30 backdrop-blur-md text-white border-none w-10 h-10 p-0 hover:bg-black/50">
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
+
+
           <div className="flex gap-2">
             <Badge className="bg-[#FF7F50] text-white border-none px-4 py-1.5 h-auto uppercase font-black tracking-widest text-[10px] rounded-full shadow-lg">
               {type?.replace('_', ' ')}

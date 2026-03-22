@@ -113,10 +113,8 @@ const CompanyPage = () => {
     <div className="min-h-screen bg-[#F8F9FA] flex flex-col">
       <Header />
       <main className="flex-1 container px-4 py-8 mx-auto pb-24 md:pb-8">
-        <Button variant="ghost" onClick={() => navigate(-1)} className="mb-6 rounded-full">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          <span className="text-[10px] font-black uppercase tracking-widest">Back</span>
-        </Button>
+
+
 
         {/* Company Header */}
         <div className="bg-white rounded-[28px] p-6 md:p-8 shadow-sm border border-slate-100 mb-8">
