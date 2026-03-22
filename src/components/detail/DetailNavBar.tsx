@@ -1,5 +1,4 @@
-import { ArrowLeft, Heart, Share2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Heart, Share2 } from "lucide-react";
 
 interface DetailNavBarProps {
   scrolled: boolean;
@@ -23,6 +22,7 @@ export const DetailNavBar = ({
       {/* ── Always-visible nav bar (mobile + desktop) ── */}
       <div
         className="fixed top-0 left-0 right-0 z-[100]"
+        style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
       >
         {/* Mobile frosted glass pill - always visible */}
         <div className="md:hidden mx-3 mt-3">
@@ -36,20 +36,6 @@ export const DetailNavBar = ({
               border border-white/60
             "
           >
-            {/* Back */}
-            <button
-              onClick={onBack}
-              className="
-                flex items-center justify-center
-                w-9 h-9 rounded-xl
-                bg-slate-100/80 hover:bg-slate-200/80
-                text-slate-700
-                transition-all duration-150 active:scale-95
-              "
-            >
-              <ArrowLeft className="h-4 w-4 stroke-[2.5]" />
-            </button>
-
             {/* Title */}
             <p
               className="
@@ -111,20 +97,6 @@ export const DetailNavBar = ({
           "
         >
           <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-3">
-            <button
-              onClick={onBack}
-              className="
-                flex items-center gap-2
-                px-4 py-2 rounded-xl
-                text-slate-700 text-xs font-black uppercase tracking-widest
-                bg-slate-100 hover:bg-slate-200
-                transition-all duration-150 active:scale-95
-              "
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back
-            </button>
-
             <p className="text-sm font-black uppercase tracking-[0.1em] text-slate-800 truncate max-w-md">
               {itemName}
             </p>

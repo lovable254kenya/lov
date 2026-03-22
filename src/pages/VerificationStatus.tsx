@@ -57,12 +57,8 @@ const VerificationStatus = () => {
         <div className="absolute inset-0 opacity-20" 
              style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '24px 24px' }} />
         <div className="container px-4 h-full flex items-end pb-12">
-           <Button 
-            onClick={() => navigate(-1)} 
-            className="rounded-full bg-white/20 backdrop-blur-md text-white border-none w-10 h-10 p-0 hover:bg-white/30 mb-4"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
+
+
         </div>
       </div>
 

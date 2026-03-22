@@ -695,9 +695,8 @@ const CreateAdventure = () => {
       <div className="relative h-[25vh] w-full overflow-hidden bg-slate-900">
         <img src="/images/category-campsite.webp" className="absolute inset-0 w-full h-full object-cover opacity-60" alt="" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#F8F9FA] via-transparent to-transparent" />
-        <Button onClick={goBack} className="absolute top-4 left-4 rounded-full bg-black/30 backdrop-blur-md text-white border-none w-10 h-10 p-0 z-50">
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
+
+
         <div className="absolute bottom-8 left-0 w-full px-8 container mx-auto">
           <h1 className="text-2xl md:text-4xl font-black uppercase tracking-tighter leading-none text-white drop-shadow-2xl">
             Create <span style={{ color: COLORS.KHAKI }}>Adventure</span>

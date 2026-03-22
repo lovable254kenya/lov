@@ -299,14 +299,7 @@ const BookingPage = () => {
       {!isCompleted && !isVerifying && (
         <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-slate-100">
           <div className="container max-w-2xl mx-auto px-4 py-4 flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={goBack}
-              className="rounded-full bg-slate-100 hover:bg-slate-200"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
+
             <div className="flex-1 min-w-0">
               <h1 className="text-lg font-black uppercase tracking-tight truncate" style={{ color: COLORS.TEAL }}>
                 Book {item.name}

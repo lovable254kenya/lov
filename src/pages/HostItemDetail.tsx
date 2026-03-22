@@ -140,15 +140,8 @@ const HostItemDetail = () => {
 
       {/* Hero Section */}
       <div className="relative w-full h-[40vh] md:h-[50vh] overflow-hidden">
-        <div className="absolute top-4 left-4 z-50">
-          <Button 
-            onClick={() => navigate("/become-host")} 
-            className="rounded-full bg-black/30 backdrop-blur-md text-white border-none hover:bg-black/50 font-black uppercase text-[10px] tracking-widest h-10"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            My Dashboard
-          </Button>
-        </div>
+
+
         
         <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />

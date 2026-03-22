@@ -76,9 +76,8 @@ export default function PaymentHistory() {
   return (
     <div className="min-h-screen bg-background">
       <main className="container px-4 py-4 mx-auto">
-        <Button onClick={() => navigate("/payment")} variant="ghost" size="sm" className="mb-3 rounded-lg text-[9px] font-bold uppercase tracking-widest px-3 h-7">
-          <ArrowLeft className="mr-1 h-3 w-3" /> Payment
-        </Button>
+
+
         <div className="mb-4">
           <h1 className="text-lg font-black uppercase tracking-tight text-foreground">Payment History</h1>
           <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Transaction Records</p>

@@ -168,9 +168,8 @@ export default function Payment() {
     <div className="min-h-screen bg-background">
       <SEOHead title="Payment Dashboard | Realtravo" description="View your earnings, referral commissions, and manage withdrawals on Realtravo." />
       <main className="container px-4 py-4 mx-auto">
-        <Button variant="ghost" size="sm" onClick={() => navigate("/")} className="mb-3 rounded-lg text-[9px] font-bold uppercase tracking-widest px-3 h-7">
-          <ArrowLeft className="mr-1 h-3 w-3" /> Home
-        </Button>
+
+
 
         <div className="mb-4">
           <h1 className="text-lg font-black uppercase tracking-tight text-foreground">Payment Dashboard</h1>

@@ -205,14 +205,8 @@ const ProfileEdit = () => {
       <Header />
       
       <main className="container px-4 py-8 mx-auto relative z-10">
-        <Button
-          variant="ghost"
-          onClick={() => navigate(-1)}
-          className="mb-6 hover:bg-white/50 rounded-full"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          <span className="text-[10px] font-black uppercase tracking-widest">Back</span>
-        </Button>
+
+
 
         <div className="mb-8">
           <Button className="bg-[#FF7F50] hover:bg-[#FF7F50] border-none px-4 py-1.5 h-auto uppercase font-black tracking-[0.15em] text-[10px] rounded-full shadow-lg mb-4">

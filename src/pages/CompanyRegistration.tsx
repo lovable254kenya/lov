@@ -158,10 +158,8 @@ const CompanyRegistration = () => {
     <div className="min-h-screen bg-[#F8F9FA] pb-24">
       <Header />
       <main className="container px-4 py-8 mx-auto">
-        <Button variant="ghost" onClick={() => navigate(-1)} className="mb-6 rounded-full">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          <span className="text-[10px] font-black uppercase tracking-widest">Back</span>
-        </Button>
+
+
 
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-4">

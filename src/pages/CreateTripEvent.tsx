@@ -231,7 +231,7 @@ const CreateTripEvent = () => {
         <div className="relative rounded-[40px] overflow-hidden mb-6 shadow-2xl h-[160px] md:h-[220px]">
           <img src="/images/category-trips.webp" className="w-full h-full object-cover" alt="Header" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-6">
-            <Button onClick={goBack} className="absolute top-4 left-4 rounded-full bg-white/20 backdrop-blur-md border-none w-10 h-10 p-0 text-white"><ArrowLeft className="h-5 w-5" /></Button>
+            
             <h1 className="text-2xl md:text-4xl font-black text-white uppercase tracking-tighter">
               Create <span style={{ color: COLORS.TEAL }}>Experience</span>
             </h1>

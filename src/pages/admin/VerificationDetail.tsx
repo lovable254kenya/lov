@@ -185,14 +185,8 @@ const VerificationDetail = () => {
       {/* Top Banner / Hero Style */}
       <div className="bg-white border-b border-slate-100 pt-8 pb-12">
         <div className="container mx-auto px-4">
-          <Button 
-            onClick={() => navigate(-1)} 
-            variant="ghost" 
-            className="mb-6 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 px-4"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            <span className="text-[10px] font-black uppercase tracking-widest">Back to Queue</span>
-          </Button>
+
+
 
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div>

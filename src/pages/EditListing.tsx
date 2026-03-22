@@ -645,14 +645,8 @@ const EditListing = () => {
       <Header />
       
       <main className="container px-4 py-8 mx-auto">
-        <Button
-          variant="ghost"
-          onClick={goBack}
-          className="mb-4 text-[#008080] hover:bg-[#008080]/10"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back
-        </Button>
+
+
         <div className="mb-6">
           <div className="flex items-center justify-between">
             <div>

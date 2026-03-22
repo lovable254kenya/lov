@@ -395,14 +395,8 @@ const HostBookingDetails = () => {
       <Header />
       
       <main className="container px-4 mx-auto py-8">
-        <Button 
-          variant="ghost" 
-          onClick={() => navigate("/host-bookings")} 
-          className="mb-8 hover:bg-white rounded-full font-black uppercase tracking-widest text-[10px]"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Bookings
-        </Button>
+
+
 
         <div className="mb-10 space-y-2">
           <Badge className="bg-[#FF7F50] hover:bg-[#FF7F50] border-none px-4 py-1 h-auto uppercase font-black tracking-[0.15em] text-[10px] rounded-full">

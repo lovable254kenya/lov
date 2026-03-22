@@ -171,12 +171,7 @@ const VerificationList = () => {
         {/* Header Section */}
         <div className="flex flex-col gap-6 mb-8">
           <div className="flex items-center gap-4">
-            <Button
-              onClick={() => navigate("/admin/verification")}
-              className="rounded-full bg-white shadow-sm border-none w-10 h-10 p-0 text-slate-600 hover:bg-slate-100"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
+
             <div>
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Admin Dashboard</p>
                 <h1 className="text-3xl font-black uppercase tracking-tighter leading-none" style={{ color: COLORS.TEAL }}>

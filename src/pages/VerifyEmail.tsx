@@ -107,13 +107,8 @@ const VerifyEmail = () => {
            style={{ clipPath: 'polygon(0 0, 100% 0, 100% 70%, 0% 100%)' }} />
 
       <main className="container relative z-10 px-4 pt-12 max-w-md mx-auto">
-        <Button 
-          onClick={() => navigate(-1)} 
-          variant="ghost" 
-          className="mb-8 text-[#008080] font-black uppercase tracking-widest text-[10px] hover:bg-white/50"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" /> Back
-        </Button>
+
+
 
         <Card className="p-8 rounded-[32px] border-none shadow-2xl bg-white overflow-hidden">
           <div className="flex flex-col items-center mb-8">

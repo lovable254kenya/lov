@@ -82,10 +82,8 @@ const CompanyReview = () => {
     <div className="min-h-screen bg-[#F8F9FA] pb-24">
       <Header />
       <main className="container px-4 py-8 mx-auto">
-        <Button variant="ghost" onClick={() => navigate("/admin")} className="mb-6 rounded-full">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          <span className="text-[10px] font-black uppercase tracking-widest">Admin</span>
-        </Button>
+
+
 
         <h1 className="text-3xl font-black uppercase tracking-tighter mb-6">
           Company <span className="text-[#FF7F50]">Review</span>

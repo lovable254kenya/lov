@@ -55,9 +55,8 @@ const HostBookings = () => {
   return (
     <div className="min-h-screen bg-background">
       <main className="container px-3 py-4 mx-auto">
-        <Button variant="ghost" size="sm" onClick={() => navigate("/")} className="mb-3 rounded-lg text-[9px] font-bold uppercase tracking-widest px-3 h-7">
-          <ArrowLeft className="mr-1 h-3 w-3" /> Home
-        </Button>
+
+
 
         <div className="flex items-end justify-between mb-4">
           <div>

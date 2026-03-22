@@ -15,10 +15,8 @@ const HotelGuide = () => {
         canonical="https://realtravo.com/hotel-guide"
       />
       <div className="container max-w-4xl mx-auto px-4 py-8">
-        <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="mb-6">
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back
-        </Button>
+
+
 
         <div className="text-center mb-10">
           <h1 className="text-4xl font-black text-primary tracking-tight">REALTRAVO</h1>

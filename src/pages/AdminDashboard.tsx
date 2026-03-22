@@ -139,14 +139,8 @@ const AdminDashboard = () => {
       <Header className="hidden md:block" />
 
       <main className="flex-1 container px-4 py-8 mx-auto pb-24 md:pb-8">
-        <Button
-          variant="ghost"
-          onClick={() => navigate(-1)}
-          className="mb-8 rounded-full bg-white shadow-sm border border-slate-100 hover:bg-slate-50 p-2 h-10 w-10 md:w-auto md:px-4"
-        >
-          <ArrowLeft className="h-4 w-4 md:mr-2" />
-          <span className="hidden md:inline font-black uppercase text-[10px] tracking-widest">Back</span>
-        </Button>
+
+
 
         <div className="flex items-center gap-3 mb-2">
            <div className="p-2 rounded-xl" style={{ backgroundColor: `${COLORS.TEAL}15` }}>
